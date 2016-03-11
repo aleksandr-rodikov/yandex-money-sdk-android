@@ -30,7 +30,7 @@ allprojects {
 }
 
 dependencies {
-    compile 'com.yandex.money.api:yandex-money-sdk-android:3.1.3'
+    compile 'com.yandex.money.api:yandex-money-sdk-android:3.1.4'
 }
 ```
 
@@ -47,14 +47,14 @@ For example, if you want to pay for a phone, you can do it like this:
 public class MyActivity extends Activity implement View.OnClickListener {
 
     private static final String CLIENT_ID = "[your_client_id]";
-    private static final string HOST = "https://demomoney.yandex.ru";
+    private static final String HOST = "https://demomoney.yandex.ru";
     private static final int REQUEST_CODE = 1;
 
     ...
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CODE && resultCode = RESULT_OK) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
             // payment was successful
         }
     }
@@ -65,7 +65,7 @@ public class MyActivity extends Activity implement View.OnClickListener {
     public void onClickListener(View v) {
         PaymentParams phoneParams = PhoneParams.newInstance("79012345678", new BigDecimal(100.0))
         Intent intent = PaymentActivity.getBuilder(this)
-                .setPaymentParams(paymentParams)
+                .setPaymentParams(phoneParams)
                 .setClientId(CLIENT_ID)
                 .setHost(HOST)
                 .build();
