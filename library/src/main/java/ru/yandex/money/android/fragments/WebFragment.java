@@ -32,6 +32,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -164,10 +166,18 @@ public final class WebFragment extends PaymentFragment {
             return completed || super.shouldOverrideUrlLoading(view, url);
         }
 
-        @SuppressWarnings("deprecation")
+        @SuppressWarnings("deprecation") // to support operating systems with integrated API < 23
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            super.onReceivedError(view, errorCode, description, failingUrl);
+            handleError();
+        }
+
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            handleError();
+        }
+
+        private void handleError() {
             hideProgressBar();
             setMessageVisible(true);
         }
