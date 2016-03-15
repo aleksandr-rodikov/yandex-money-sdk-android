@@ -35,8 +35,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
 
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.net.ParametersBuffer;
@@ -57,8 +55,7 @@ public final class WebFragment extends PaymentFragment {
     private static final String KEY_POST_DATA = "postData";
 
     private WebView webView;
-    private ScrollView messageView;
-    private LinearLayout fragmentLayout;
+    private View messageView;
 
     public static WebFragment newInstance(String url, Map<String, String> postData) {
         if (TextUtils.isEmpty(url)) {
@@ -77,15 +74,14 @@ public final class WebFragment extends PaymentFragment {
         return fragment;
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        fragmentLayout = (LinearLayout) inflater.inflate(R.layout.ym_web_fragment, container, false);
-        setUpWebView();
-        setUpMessageView();
-        return fragmentLayout;
+        View layout = inflater.inflate(R.layout.ym_web_fragment, container, false);
+        setUpWebView(layout);
+        setUpMessageView(layout);
+        return layout;
     }
 
     @Override
@@ -94,16 +90,17 @@ public final class WebFragment extends PaymentFragment {
         loadPage();
     }
 
-    private void setUpWebView() {
-        webView = (WebView) fragmentLayout.findViewById(R.id.web_view);
+    @SuppressLint("SetJavaScriptEnabled")
+    private void setUpWebView(View layout) {
+        webView = (WebView) layout.findViewById(R.id.web_view);
         webView.setVisibility(View.VISIBLE);
         webView.setWebViewClient(new Client());
         webView.setWebChromeClient(new Chrome());
         webView.getSettings().setJavaScriptEnabled(true);
     }
 
-    private void setUpMessageView() {
-        messageView = (ScrollView) fragmentLayout.findViewById(R.id.error_message);
+    private void setUpMessageView(View layout) {
+        messageView = layout.findViewById(R.id.error_message);
 
         final int titleResId = R.string.ym_error_something_wrong_title;
         final int messageResId = R.string.ym_error_unknown;
@@ -116,13 +113,13 @@ public final class WebFragment extends PaymentFragment {
         action.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadPage();
+                webView.reload();
             }
         });
     }
 
     private void loadPage(String url, Map<String, String> postParams) {
-        showWebView();
+        setWebViewVisible(true);
         webView.postUrl(url, buildPostData(postParams));
     }
 
@@ -132,22 +129,14 @@ public final class WebFragment extends PaymentFragment {
                 args.getBundle(KEY_POST_DATA)));
     }
 
-    private void hideWebView() {
-        webView.setVisibility(View.GONE);
+    private void setWebViewVisible(boolean visible) {
+        webView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        messageView.setVisibility(visible ? View.GONE : View.VISIBLE);
     }
 
-    private void showWebView() {
-        hideMessageView();
-        webView.setVisibility(View.VISIBLE);
-    }
-
-    private void hideMessageView() {
-        messageView.setVisibility(View.GONE);
-    }
-
-    private void showMessageView() {
-        hideWebView();
-        messageView.setVisibility(View.VISIBLE);
+    private void setMessageVisible(boolean visible) {
+        messageView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        webView.setVisibility(visible ? View.GONE : View.VISIBLE);
     }
 
     private byte[] buildPostData(Map<String, String> postParams) {
@@ -163,7 +152,7 @@ public final class WebFragment extends PaymentFragment {
             boolean completed = false;
             if (url.contains(PaymentArguments.EXT_AUTH_SUCCESS_URI)) {
                 completed = true;
-                hideWebView();
+                webView.setVisibility(View.GONE);
                 proceed();
             } else if (url.contains(PaymentArguments.EXT_AUTH_FAIL_URI)) {
                 completed = true;
@@ -175,11 +164,12 @@ public final class WebFragment extends PaymentFragment {
             return completed || super.shouldOverrideUrlLoading(view, url);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             super.onReceivedError(view, errorCode, description, failingUrl);
             hideProgressBar();
-            showMessageView();
+            setMessageVisible(true);
         }
     }
 
