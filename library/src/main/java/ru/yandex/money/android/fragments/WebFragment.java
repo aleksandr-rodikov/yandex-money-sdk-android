@@ -57,7 +57,7 @@ public final class WebFragment extends PaymentFragment {
     private static final String KEY_POST_DATA = "postData";
 
     private WebView webView;
-    private View messageView;
+    private View errorView;
 
     public static WebFragment newInstance(String url, Map<String, String> postData) {
         if (TextUtils.isEmpty(url)) {
@@ -102,15 +102,15 @@ public final class WebFragment extends PaymentFragment {
     }
 
     private void setUpMessageView(View layout) {
-        messageView = layout.findViewById(R.id.error_message);
+        errorView = layout.findViewById(R.id.error_view);
 
         final int titleResId = R.string.ym_error_something_wrong_title;
         final int messageResId = R.string.ym_error_unknown;
         final int actionResId = R.string.ym_error_action_try_again;
-        final Button action = (Button) messageView.findViewById(R.id.ym_error_action);
+        final Button action = (Button) errorView.findViewById(R.id.ym_error_action);
 
-        Views.setText(messageView, R.id.ym_error_title, getString(titleResId));
-        Views.setText(messageView, R.id.ym_error_message, getString(messageResId));
+        Views.setText(errorView, R.id.ym_error_title, getString(titleResId));
+        Views.setText(errorView, R.id.ym_error_message, getString(messageResId));
         action.setText(getString(actionResId));
         action.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,7 +121,7 @@ public final class WebFragment extends PaymentFragment {
     }
 
     private void loadPage(String url, Map<String, String> postParams) {
-        setWebViewVisible(true);
+        hideError();
         webView.postUrl(url, buildPostData(postParams));
     }
 
@@ -131,14 +131,14 @@ public final class WebFragment extends PaymentFragment {
                 args.getBundle(KEY_POST_DATA)));
     }
 
-    private void setWebViewVisible(boolean visible) {
-        webView.setVisibility(visible ? View.VISIBLE : View.GONE);
-        messageView.setVisibility(visible ? View.GONE : View.VISIBLE);
+    private void showError() {
+        webView.setVisibility(View.GONE);
+        errorView.setVisibility(View.VISIBLE);
     }
 
-    private void setMessageVisible(boolean visible) {
-        messageView.setVisibility(visible ? View.VISIBLE : View.GONE);
-        webView.setVisibility(visible ? View.GONE : View.VISIBLE);
+    private void hideError() {
+        errorView.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
     }
 
     private byte[] buildPostData(Map<String, String> postParams) {
@@ -169,17 +169,13 @@ public final class WebFragment extends PaymentFragment {
         @SuppressWarnings("deprecation") // to support operating systems with integrated API < 23
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            handleError();
+            onReceivedError(view, null, null);
         }
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            handleError();
-        }
-
-        private void handleError() {
             hideProgressBar();
-            setMessageVisible(true);
+            showError();
         }
     }
 
