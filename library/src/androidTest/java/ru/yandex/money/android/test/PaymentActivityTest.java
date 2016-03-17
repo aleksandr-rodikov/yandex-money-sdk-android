@@ -44,7 +44,6 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
@@ -111,7 +110,9 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
             protected void execute() {
                 waitForFragment();
                 // check that there was no error
-                onView(withId(R.id.ym_error_title)).check(doesNotExist());
+                onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+                onView(withId(R.id.ym_error_title))
+                        .check(matches(not(isDisplayed())));
 
                 payNewCard();
             }
