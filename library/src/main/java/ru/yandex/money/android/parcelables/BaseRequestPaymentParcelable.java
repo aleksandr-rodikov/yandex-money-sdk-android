@@ -56,6 +56,7 @@ public abstract class BaseRequestPaymentParcelable implements Parcelable {
                 .setError((Error) parcel.readSerializable())
                 .setRequestId(parcel.readString())
                 .setContractAmount(Parcelables.readBigDecimal(parcel))
+                .setTitle(parcel.readString())
                 .create();
         baseRequestPayment = value;
     }
@@ -71,5 +72,6 @@ public abstract class BaseRequestPaymentParcelable implements Parcelable {
         dest.writeSerializable(value.error);
         dest.writeString(value.requestId);
         Parcelables.writeBigDecimal(dest, value.contractAmount);
+        dest.writeString(value.title);
     }
 }

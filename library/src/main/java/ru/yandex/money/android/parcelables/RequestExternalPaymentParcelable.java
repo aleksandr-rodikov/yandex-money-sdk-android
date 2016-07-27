@@ -39,15 +39,7 @@ public final class RequestExternalPaymentParcelable extends BaseRequestPaymentPa
     }
 
     private RequestExternalPaymentParcelable(@NonNull Parcel parcel) {
-        super(parcel, new RequestExternalPayment.Builder()
-                .setTitle(parcel.readString()));
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        RequestExternalPayment rep = (RequestExternalPayment) value;
-        dest.writeString(rep.title);
-        super.writeToParcel(dest, flags);
+        super(parcel, new RequestExternalPayment.Builder());
     }
 
     public static final Creator<RequestExternalPaymentParcelable> CREATOR =
