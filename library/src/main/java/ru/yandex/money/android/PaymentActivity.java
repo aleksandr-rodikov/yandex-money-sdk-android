@@ -95,6 +95,7 @@ public final class PaymentActivity extends Activity {
      * Returns intent builder used for launch this activity
      *
      * @param context application context or {@code null}
+     * @return intent builder
      */
     public static PaymentParamsBuilder getBuilder(Context context) {
         return new IntentBuilder(context);

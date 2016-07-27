@@ -53,6 +53,7 @@ public class UiThreadExecutor implements Executor {
     }
 
     /**
+     * @param runnable command to execute
      * @deprecated use {@link #execute(Runnable)} instead
      */
     @Deprecated
