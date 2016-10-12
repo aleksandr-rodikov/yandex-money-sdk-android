@@ -24,7 +24,7 @@
 
 package ru.yandex.money.android.formatters;
 
-import com.yandex.money.api.utils.Strings;
+import com.yandex.money.api.util.Strings;
 
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.utils.CardType;

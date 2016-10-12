@@ -24,42 +24,40 @@
 
 package ru.yandex.money.android;
 
-import android.text.TextUtils;
+import com.yandex.money.api.net.clients.DefaultApiClient;
 
-import com.yandex.money.api.net.DefaultApiClient;
-import com.yandex.money.api.net.HostsProvider;
+import static com.yandex.money.api.util.Common.checkNotEmpty;
 
 /**
  * @author Slava Yasevich (vyasevich@yamoney.ru)
  */
 final class ApiClientWrapper extends DefaultApiClient {
 
-    public final static String PRODUCTION_HOST = "https://money.yandex.ru";
+    final static String PRODUCTION_HOST = "https://money.yandex.ru";
 
-    private final HostsProvider hostsProvider;
     private final boolean sandbox;
 
-    ApiClientWrapper(final String clientId, final String url) {
-        super(clientId, true);
-        if (TextUtils.isEmpty(url)) {
-            throw new IllegalArgumentException("url is null or empty");
+    private ApiClientWrapper(Builder builder) {
+        super(builder);
+        sandbox = !checkNotEmpty(builder.url, "url").equals(PRODUCTION_HOST);
+    }
+
+    boolean isSandbox() {
+        return sandbox;
+    }
+
+    static final class Builder extends DefaultApiClient.Builder {
+
+        private String url;
+
+        public Builder setUrl(String url) {
+            this.url = url;
+            return this;
         }
 
-        sandbox = !url.equals(PRODUCTION_HOST);
-        hostsProvider = new HostsProvider(true) {
-            @Override
-            public String getMoney() {
-                return url;
-            }
-        };
-    }
-
-    @Override
-    public HostsProvider getHostsProvider() {
-        return hostsProvider;
-    }
-
-    public boolean isSandbox() {
-        return sandbox;
+        @Override
+        public ApiClientWrapper create() {
+            return new ApiClientWrapper(this);
+        }
     }
 }

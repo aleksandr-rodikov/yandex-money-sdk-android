@@ -32,10 +32,9 @@ import android.support.test.espresso.util.HumanReadables;
 import android.support.test.espresso.util.TreeIterables;
 import android.view.View;
 
-import com.yandex.money.api.utils.MillisecondsIn;
-
 import org.hamcrest.Matcher;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -55,7 +54,7 @@ public final class MoreViewActions {
     }
 
     private static long duration(int seconds) {
-        return seconds * MillisecondsIn.SECOND;
+        return TimeUnit.SECONDS.toMillis(seconds);
     }
 
     private static final class WaitView extends WaitAction {

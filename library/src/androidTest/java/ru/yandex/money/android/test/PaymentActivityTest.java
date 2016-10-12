@@ -32,7 +32,8 @@ import android.view.View;
 import com.robotium.solo.Condition;
 import com.robotium.solo.Solo;
 import com.yandex.money.api.methods.params.PhoneParams;
-import com.yandex.money.api.utils.MillisecondsIn;
+
+import java.util.concurrent.TimeUnit;
 
 import ru.yandex.money.android.PaymentActivity;
 import ru.yandex.money.android.PaymentArguments;
@@ -290,7 +291,7 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
     }
 
     private int sleep(int seconds) {
-        return seconds * (int) MillisecondsIn.SECOND;
+        return (int) TimeUnit.SECONDS.toMillis(seconds);
     }
 
     private String getString(int resId, Object... params) {
@@ -332,7 +333,7 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
 
         private PaymentArguments createArguments() {
             PhoneParams params = localProperties.getPhoneParams();
-            return new PaymentArguments(params.getPatternId(), params.makeParams());
+            return new PaymentArguments(params.patternId, params.paymentParams);
         }
     }
 

@@ -47,7 +47,9 @@ import com.yandex.money.api.methods.params.PaymentParams;
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.model.ExternalCard;
 import com.yandex.money.api.model.MoneySource;
-import com.yandex.money.api.net.OAuth2Session;
+import com.yandex.money.api.net.clients.ApiClient;
+import com.yandex.money.api.net.clients.DefaultApiClient;
+import com.yandex.money.api.net.providers.DefaultApiV1HostsProvider;
 import com.yandex.money.api.processes.ExternalPaymentProcess;
 
 import java.util.List;
@@ -287,10 +289,18 @@ public final class PaymentActivity extends Activity {
     private boolean initPaymentProcess() {
         final Intent intent = getIntent();
         final String clientId = intent.getStringExtra(EXTRA_CLIENT_ID);
-        ApiClientWrapper apiClient = new ApiClientWrapper(clientId,
-                intent.getStringExtra(EXTRA_HOST));
-        final OAuth2Session session = new OAuth2Session(apiClient);
-        session.setDebugLogging(apiClient.isSandbox());
+
+        final String host = intent.getStringExtra(EXTRA_HOST);
+        final ApiClient client = new DefaultApiClient.Builder()
+                .setClientId(clientId)
+                .setHostsProvider(new DefaultApiV1HostsProvider(true) {
+                    @Override
+                    public String getMoney() {
+                        return host;
+                    }
+                })
+                .setDebugMode(!"https://money.yandex.ru".equals(host))
+                .create();
 
         parameterProvider = new ExternalPaymentProcess.ParameterProvider() {
             @Override
@@ -332,18 +342,18 @@ public final class PaymentActivity extends Activity {
             }
         };
 
-        process = new ExternalPaymentProcess(session, parameterProvider);
+        process = new ExternalPaymentProcess(client, parameterProvider);
 
         final Prefs prefs = new Prefs(this);
         String instanceId = prefs.restoreInstanceId();
         if (TextUtils.isEmpty(instanceId)) {
-            performOperation(() -> session.execute(new InstanceId.Request(clientId)), response -> {
-                if (response.isSuccess()) {
+            performOperation(() -> client.execute(new InstanceId.Request(clientId)), response -> {
+                if (response.statusInfo.isSuccessful()) {
                     prefs.storeInstanceId(response.instanceId);
                     process.setInstanceId(response.instanceId);
                     proceed();
                 } else {
-                    showError(response.error, response.status.code);
+                    showError(response.statusInfo.error, response.statusInfo.status.code);
                 }
             });
             return false;
@@ -467,8 +477,8 @@ public final class PaymentActivity extends Activity {
         }
 
         public AppClientIdBuilder setPaymentParams(PaymentParams paymentParams) {
-            this.patternId = paymentParams.getPatternId();
-            this.paymentParams = paymentParams.makeParams();
+            this.patternId = paymentParams.patternId;
+            this.paymentParams = paymentParams.paymentParams;
             return this;
         }
 

@@ -143,7 +143,7 @@ public final class WebFragment extends PaymentFragment {
 
     private byte[] buildPostData(Map<String, String> postParams) {
         return new ParametersBuffer()
-                .setParams(postParams)
+                .setParameters(postParams)
                 .prepareBytes();
     }
 
