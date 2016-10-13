@@ -5,8 +5,8 @@ apply plugin: 'bintray-release'
 ext {
     // version* variables must not be longer than two digits
     versionMajor = 3
-    versionMinor = 1
-    versionPatch = 5
+    versionMinor = 2
+    versionPatch = 0
     versionAlpha = 0
 }
 
@@ -47,7 +47,7 @@ int getAppVersionCode() {
 }
 
 dependencies {
-    compile 'com.yandex.money.api:yandex-money-sdk-java:6.0.0-client-4'
+    compile 'com.yandex.money.api:yandex-money-sdk-java:6.0.0'
     compile 'com.android.support:support-v13:23.2.1'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'io.reactivex:rxjava:1.1.6'
