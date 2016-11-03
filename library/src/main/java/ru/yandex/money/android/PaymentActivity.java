@@ -142,7 +142,7 @@ public final class PaymentActivity extends Activity {
         hideProgressBar();
 
         arguments = PaymentExtras.fromBundle(getIntent().getBundleExtra(EXTRA_ARGUMENTS));
-        cards = new DatabaseStorage(this).selectMoneySources();
+        cards = new DatabaseStorage(this).selectExternalCards();
 
         if (!initPaymentProcess()) return;
 

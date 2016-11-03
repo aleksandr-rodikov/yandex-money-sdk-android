@@ -114,8 +114,8 @@ public class SuccessFragment extends PaymentFragment {
             throw new NullPointerException("moneySource is null");
         }
         this.moneySource = moneySource;
-        new DatabaseStorage(getPaymentActivity())
-                .insertMoneySource(moneySource);
+        new DatabaseStorage(getPaymentActivity()) // todo do not create new instance of storage get it from activity
+                .insertExternalCard(moneySource);
         onCardSaved();
     }
 

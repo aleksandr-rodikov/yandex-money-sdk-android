@@ -86,7 +86,7 @@ public class CardsFragment extends PaymentFragment {
         Views.setText(view, R.id.ym_payment_sum, getString(R.string.ym_cards_payment_sum_value,
                 new BigDecimal(args.getString(KEY_CONTRACT_AMOUNT))));
 
-        databaseStorage = new DatabaseStorage(getPaymentActivity());
+        databaseStorage = new DatabaseStorage(getPaymentActivity()); // todo reuse instance from PaymentActivity
         bankCards = (ViewGroup) view.findViewById(android.R.id.list);
 
         for (int i = 0; i < getCards().size(); i++) {
@@ -143,7 +143,7 @@ public class CardsFragment extends PaymentFragment {
     }
 
     private void deleteCard(ExternalCard moneySource, int position) {
-        databaseStorage.deleteMoneySource(moneySource);
+        databaseStorage.deleteExternalCard(moneySource);
         bankCards.removeViewAt(position);
         getCards().remove(moneySource);
     }

@@ -49,8 +49,8 @@ final class AppData {
         prefs.storeInstanceId("");
 
         DatabaseStorage storage = new DatabaseStorage(context);
-        for (ExternalCard card : storage.selectMoneySources()) {
-            storage.deleteMoneySource(card);
+        for (ExternalCard card : storage.selectExternalCards()) {
+            storage.deleteExternalCard(card);
         }
     }
 
@@ -67,7 +67,7 @@ final class AppData {
         prefs.storeInstanceId(instanceId);
 
         DatabaseStorage storage = new DatabaseStorage(context);
-        storage.insertMoneySource((ExternalCard) new ExternalCard.Builder()
+        storage.insertExternalCard((ExternalCard) new ExternalCard.Builder()
                 .setFundingSourceType("payment-card")
                 .setMoneySourceToken(card.token)
                 .setPanFragment(card.number)

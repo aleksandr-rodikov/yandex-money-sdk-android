@@ -25,24 +25,26 @@
 package ru.yandex.money.android.database;
 
 /**
-* @author vyasevich
-*/
-public class MoneySourceTable {
-    public static final String NAME = "MoneySources";
+ * Represent a structure of {@code MoneySource} table. This table is used to store
+ * {@link com.yandex.money.api.model.ExternalCard} data.
+ */
+final class MoneySourceTable {
 
-    public static final String FUNDING_SOURCE_TYPE = "funding_source_type";
-    public static final String TYPE = "type";
-    public static final String PAN_FRAGMENT = "pan_fragment";
-    public static final String TOKEN = "token";
+    static final String NAME = "MoneySources";
 
-    public static final String COMMAND_CREATE =
+    static final String FUNDING_SOURCE_TYPE = "funding_source_type";
+    static final String TYPE = "type";
+    static final String PAN_FRAGMENT = "pan_fragment";
+    static final String TOKEN = "token";
+
+    static final String COMMAND_CREATE =
             "CREATE TABLE " + NAME + " (\n" +
                     TOKEN + " TEXT PRIMARY KEY,\n" +
                     FUNDING_SOURCE_TYPE + " TEXT NOT NULL,\n" +
                     TYPE + " TEXT NOT NULL,\n" +
                     PAN_FRAGMENT + " TEXT NOT NULL);";
 
-    MoneySourceTable() {
+    private MoneySourceTable() {
         // forbid instance creation
     }
 }

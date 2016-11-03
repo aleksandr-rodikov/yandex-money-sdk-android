@@ -28,6 +28,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.yandex.money.api.model.Card;
@@ -37,19 +39,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author vyasevich
+ * Represents database and convenience methods to retrieve data from it. Normally only one instance of this class should
+ * exist at any time.
  */
-public class DatabaseStorage {
+public final class DatabaseStorage {
 
     private static final String TAG = "DatabaseStorage";
 
+    @NonNull
     private final DatabaseHelper helper;
 
-    public DatabaseStorage(Context context) {
-        helper = DatabaseHelper.getInstance(context);
+    /**
+     * Creates an instance of {@link DatabaseStorage}.
+     *
+     * @param context current context
+     */
+    public DatabaseStorage(@NonNull Context context) {
+        helper = new DatabaseHelper(context);
     }
 
+    /**
+     * @deprecated use {@link #selectExternalCards()} instead, this method will be removed in future major release
+     */
+    @Deprecated
+    @NonNull
     public List<ExternalCard> selectMoneySources() {
+        return selectExternalCards();
+    }
+
+    /**
+     * Selects all stored money sources.
+     *
+     * @return a list of {@link ExternalCard} objects
+     */
+    @NonNull
+    public List<ExternalCard> selectExternalCards() {
         SQLiteDatabase database = getReadableDatabase();
 
         Cursor cursor = database.rawQuery("SELECT * FROM " + MoneySourceTable.NAME, null);
@@ -58,7 +82,7 @@ public class DatabaseStorage {
         final int panFragmentIndex = cursor.getColumnIndex(MoneySourceTable.PAN_FRAGMENT);
         final int tokenIndex = cursor.getColumnIndex(MoneySourceTable.TOKEN);
 
-        List<ExternalCard> moneySources = new ArrayList<ExternalCard>();
+        List<ExternalCard> moneySources = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
             moneySources.add((ExternalCard) new ExternalCard.Builder()
                     .setFundingSourceType(cursor.getString(fundingSourceTypeIndex))
@@ -73,17 +97,31 @@ public class DatabaseStorage {
         return moneySources;
     }
 
-    public void insertMoneySource(ExternalCard moneySource) {
-        if (moneySource == null) {
+    /**
+     * @deprecated use {@link #insertExternalCard(ExternalCard)} instead, this method will be removed in future major
+     * release
+     */
+    @Deprecated
+    public void insertMoneySource(@Nullable ExternalCard card) {
+        insertExternalCard(card);
+    }
+
+    /**
+     * Inserts new external card to the database.
+     *
+     * @param card card to insert
+     */
+    public void insertExternalCard(@Nullable ExternalCard card) {
+        if (card == null) {
             Log.w(TAG, "trying to insert null money source");
             return;
         }
 
         ContentValues values = new ContentValues();
-        values.put(MoneySourceTable.FUNDING_SOURCE_TYPE, moneySource.fundingSourceType);
-        values.put(MoneySourceTable.TYPE, moneySource.type.name);
-        values.put(MoneySourceTable.PAN_FRAGMENT, moneySource.panFragment);
-        values.put(MoneySourceTable.TOKEN, moneySource.moneySourceToken);
+        values.put(MoneySourceTable.FUNDING_SOURCE_TYPE, card.fundingSourceType);
+        values.put(MoneySourceTable.TYPE, card.type.name);
+        values.put(MoneySourceTable.PAN_FRAGMENT, card.panFragment);
+        values.put(MoneySourceTable.TOKEN, card.moneySourceToken);
 
         if (values.size() != 0) {
             SQLiteDatabase database = getWritableDatabase();
@@ -92,8 +130,22 @@ public class DatabaseStorage {
         }
     }
 
-    public void deleteMoneySource(ExternalCard moneySource) {
-        if (moneySource == null) {
+    /**
+     * @deprecated use {@link #deleteExternalCard(ExternalCard)} instead, this method will be removed in future major
+     * release
+     */
+    @Deprecated
+    public void deleteMoneySource(@Nullable ExternalCard moneySource) {
+        deleteExternalCard(moneySource);
+    }
+
+    /**
+     * Deletes {@link ExternalCard} from database if it was previously stored
+     *
+     * @param card {@link ExternalCard} to delete
+     */
+    public void deleteExternalCard(@Nullable ExternalCard card) {
+        if (card == null) {
             Log.w(TAG, "trying to delete null money source");
             return;
         }
@@ -101,19 +153,17 @@ public class DatabaseStorage {
         SQLiteDatabase database = getWritableDatabase();
         database.execSQL("DELETE FROM " + MoneySourceTable.NAME +
                 " WHERE " + MoneySourceTable.TOKEN + " = \"" +
-                moneySource.moneySourceToken + "\"");
+                card.moneySourceToken + "\"");
         database.close();
     }
 
+    @NonNull
     private SQLiteDatabase getReadableDatabase() {
-        SQLiteDatabase database = helper.getReadableDatabase();
-        assert database != null : "cannot obtain readable database";
-        return database;
+        return helper.getReadableDatabase();
     }
 
+    @NonNull
     private SQLiteDatabase getWritableDatabase() {
-        SQLiteDatabase database = helper.getWritableDatabase();
-        assert database != null : "cannot obtain writable database";
-        return database;
+        return helper.getWritableDatabase();
     }
 }
