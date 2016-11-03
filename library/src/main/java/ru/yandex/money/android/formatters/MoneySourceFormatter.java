@@ -24,28 +24,56 @@
 
 package ru.yandex.money.android.formatters;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+
+import com.yandex.money.api.model.Card;
 import com.yandex.money.api.util.Strings;
 
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.utils.CardType;
 
 /**
- * @author vyasevich
+ * Prepares money sources to user readable formats.
  */
-public class MoneySourceFormatter {
+public final class MoneySourceFormatter {
 
-    public static String formatPanFragment(String panFragment) {
+    private MoneySourceFormatter() {
+    }
+
+    /**
+     * Formats card's pan fragment to 4-digits groups.
+     *
+     * @param card card to format
+     * @return formatted string
+     */
+    @NonNull
+    public static String formatPanFragment(@NonNull Card card) {
+        return formatPanFragment(card.panFragment);
+    }
+
+    /**
+     * Formats pan fragment to 4-digits groups.
+     *
+     * @param panFragment pan fragment
+     * @return formatted string
+     */
+    @NonNull
+    public static String formatPanFragment(@NonNull String panFragment) {
         String[] fragments = panFragment.split("\\s");
         panFragment = Strings.concatenate(fragments, "");
         fragments = Strings.split(panFragment, 4);
         return Strings.concatenate(fragments, " ");
     }
 
-    public static int getCscNumberType(CardType cardType) {
+    @StringRes
+    public static int getCscNumberType(@Nullable CardType cardType) {
         return cardType == CardType.AMERICAN_EXPRESS ? R.string.ym_csc_four : R.string.ym_csc_three;
     }
 
-    public static int getCscNumberLocation(CardType cardType) {
+    @StringRes
+    public static int getCscNumberLocation(@Nullable CardType cardType) {
         return cardType == CardType.AMERICAN_EXPRESS ? R.string.ym_csc_front : R.string.ym_csc_back;
     }
 }

@@ -101,9 +101,8 @@ public class CardsFragment extends PaymentFragment {
             });
 
             final TextView panFragment = (TextView) card.findViewById(R.id.ym_pan_fragment);
-            panFragment.setText(MoneySourceFormatter.formatPanFragment(externalCard.panFragment));
-            panFragment.setCompoundDrawablesWithIntrinsicBounds(CardType.get(
-                    externalCard.type).cardResId, 0, 0, 0);
+            panFragment.setText(MoneySourceFormatter.formatPanFragment(externalCard));
+            panFragment.setCompoundDrawablesWithIntrinsicBounds(CardType.get(externalCard.type).cardResId, 0, 0, 0);
 
             final ImageButton button = (ImageButton) view.findViewById(R.id.ym_actions);
             final int iFinal = i;

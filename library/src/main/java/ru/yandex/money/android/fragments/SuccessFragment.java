@@ -129,10 +129,8 @@ public class SuccessFragment extends PaymentFragment {
     }
 
     private void onCardSaved() {
-        Views.setImageResource(getView(), R.id.ym_payment_card_type,
-                CardType.get(moneySource.type).icoResId);
-        Views.setText(getView(), R.id.ym_pan_fragment,
-                MoneySourceFormatter.formatPanFragment(moneySource.panFragment));
+        Views.setImageResource(getView(), R.id.ym_payment_card_type, CardType.get(moneySource.type).icoResId);
+        Views.setText(getView(), R.id.ym_pan_fragment, MoneySourceFormatter.formatPanFragment(moneySource));
         card.setBackgroundResource(R.drawable.ym_card_saved);
         saveCard.setVisibility(View.GONE);
         successMarker.setVisibility(View.VISIBLE);
