@@ -25,6 +25,7 @@
 package ru.yandex.money.android.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +58,8 @@ public class CscFragment extends PaymentFragment {
     private EditText cscEditText;
     private Button pay;
 
-    public static CscFragment newInstance(ExternalCard moneySource) {
+    @NonNull
+    public static CscFragment newInstance(@NonNull ExternalCard moneySource) {
         Bundle args = new Bundle();
         args.putParcelable(KEY_MONEY_SOURCE, new ExternalCardParcelable(moneySource));
 

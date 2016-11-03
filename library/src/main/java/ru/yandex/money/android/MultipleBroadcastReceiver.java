@@ -34,8 +34,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author vyasevich
+ * @deprecated this class will be removed in future major release
  */
+@Deprecated
 public class MultipleBroadcastReceiver extends BroadcastReceiver {
 
     private final Map<String, IntentHandler> handlers = new HashMap<String, IntentHandler>();

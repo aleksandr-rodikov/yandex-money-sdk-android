@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.Window;
@@ -44,6 +45,7 @@ import com.yandex.money.api.methods.InstanceId;
 import com.yandex.money.api.methods.ProcessExternalPayment;
 import com.yandex.money.api.methods.RequestExternalPayment;
 import com.yandex.money.api.methods.params.PaymentParams;
+import com.yandex.money.api.methods.params.ShopParams;
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.model.ExternalCard;
 import com.yandex.money.api.model.MoneySource;
@@ -72,10 +74,24 @@ import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 /**
- * @author vyasevich
+ * <p>Main activity for a payment process. It guides a user through all payment steps and returns information whether
+ * payment was successful or not.</p>
+ *
+ * <p>To explicitly start this activity you may want to use {@link #getBuilder(Context)} method to create an
+ * {@link Intent} object, that can be passed to {@link #startActivity(Intent)} or
+ * {@link #startActivityForResult(Intent, int)} methods. See the description of allowed parameters in
+ * {@link PaymentParamsBuilder} and {@link Builder} interfaces.</p>
+ *
+ * <p>If the activity was started using {@link #startActivityForResult(Intent, int)} method, then it will return result
+ * of a payment to a calling activity. If payment was successful, then result code will be {@link #RESULT_OK} and
+ * {@link #EXTRA_INVOICE_ID} will be present in returned {@code data} object. If payment was canceled by a user or
+ * rejected by payment system, then result code {@link #RESULT_CANCELED} will be returned.</p>
  */
 public final class PaymentActivity extends Activity {
 
+    /**
+     * An instance of {@link String} representing instance id.
+     */
     public static final String EXTRA_INVOICE_ID = "ru.yandex.money.android.extra.INVOICE_ID";
 
     private static final String EXTRA_ARGUMENTS = "ru.yandex.money.android.extra.ARGUMENTS";
@@ -85,28 +101,36 @@ public final class PaymentActivity extends Activity {
     private static final String KEY_PROCESS_SAVED_STATE = "processSavedState";
     private static final String KEY_SELECTED_CARD = "selectedCard";
 
+    private static final String PRODUCTION_HOST = "https://money.yandex.ru";
+
     private ExternalPaymentProcess process;
     private ExternalPaymentProcess.ParameterProvider parameterProvider;
-    private PaymentArguments arguments;
+
+    private PaymentParams arguments;
     private List<ExternalCard> cards;
-    private ExternalCard selectedCard;
+
     private boolean immediateProceed = true;
+
+    @Nullable
+    private ExternalCard selectedCard;
+    @Nullable
     private Subscription subscription;
 
     /**
-     * Returns intent builder used for launch this activity
+     * Returns intent builder used for launch this activity.
      *
-     * @param context application context or {@code null}
+     * @param context current context
      * @return intent builder
      */
-    public static PaymentParamsBuilder getBuilder(Context context) {
+    @NonNull
+    public static PaymentParamsBuilder getBuilder(@NonNull Context context) {
         return new IntentBuilder(context);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS); // todo show ongoing progress some other way
         setContentView(R.layout.ym_payment_activity);
 
         ActionBar actionBar = getActionBar();
@@ -117,13 +141,10 @@ public final class PaymentActivity extends Activity {
         // we hide progress bar because on some devices we have it shown right from the start
         hideProgressBar();
 
-        arguments = new PaymentArguments(getIntent().getBundleExtra(EXTRA_ARGUMENTS));
+        arguments = PaymentExtras.fromBundle(getIntent().getBundleExtra(EXTRA_ARGUMENTS));
         cards = new DatabaseStorage(this).selectMoneySources();
 
-        boolean ready = initPaymentProcess();
-        if (!ready) {
-            return;
-        }
+        if (!initPaymentProcess()) return;
 
         if (savedInstanceState == null) {
             proceed();
@@ -134,8 +155,7 @@ public final class PaymentActivity extends Activity {
                 process.restoreSavedState(savedStateParcelable.value);
             }
 
-            ExternalCardParcelable externalCardParcelable =
-                    savedInstanceState.getParcelable(KEY_SELECTED_CARD);
+            ExternalCardParcelable externalCardParcelable = savedInstanceState.getParcelable(KEY_SELECTED_CARD);
             if (externalCardParcelable != null) {
                 selectedCard = (ExternalCard) externalCardParcelable.value;
             }
@@ -189,62 +209,112 @@ public final class PaymentActivity extends Activity {
         }
     }
 
+    /**
+     * Gets list of saved cards.
+     *
+     * @return list of saved card
+     */
+    @NonNull
     public List<ExternalCard> getCards() {
         return cards;
     }
 
-    public void showWeb(String url, Map<String, String> postData) {
+    /**
+     * Shows {@link WebFragment} clearing back stack if needed.
+     *
+     * @param url url to open
+     * @param postData data to post
+     */
+    public void showWeb(@NonNull String url, @NonNull Map<String, String> postData) {
         Fragment fragment = getCurrentFragment();
-        boolean clearBackStack = !(fragment instanceof CardsFragment ||
-                fragment instanceof CscFragment);
+        boolean clearBackStack = !(fragment instanceof CardsFragment || fragment instanceof CscFragment);
         replaceFragment(WebFragment.newInstance(url, postData), clearBackStack);
     }
 
+    /**
+     * Shows {@link CardsFragment}.
+     */
     public void showCards() {
         RequestExternalPayment rep = (RequestExternalPayment) process.getRequestPayment();
         replaceFragment(CardsFragment.newInstance(rep.title, rep.contractAmount), true);
     }
 
-    public void showError(Error error, String status) {
+    /**
+     * Shows {@link ErrorFragment}.
+     *
+     * @param error known error
+     * @param status known status
+     */
+    public void showError(@Nullable Error error, @Nullable String status) {
         replaceFragment(ErrorFragment.newInstance(error, status), true);
     }
 
+    /**
+     * Shows {@link ErrorFragment} for unknown error or status.
+     */
     public void showUnknownError() {
         replaceFragment(ErrorFragment.newInstance(), true);
     }
 
-    public void showSuccess(ExternalCard moneySource) {
-        replaceFragment(SuccessFragment.newInstance(process.getRequestPayment().contractAmount,
-                moneySource), true);
+    /**
+     * Shows {@link SuccessFragment}.
+     *
+     * @param moneySource saved card that was used to do a payment or {@code null}
+     */
+    public void showSuccess(@Nullable ExternalCard moneySource) {
+        replaceFragment(SuccessFragment.newInstance(process.getRequestPayment().contractAmount, moneySource), true);
     }
 
-    public void showCsc(ExternalCard externalCard) {
+    /**
+     * Shows {@link CscFragment}.
+     *
+     * @param externalCard selected card
+     */
+    public void showCsc(@NonNull ExternalCard externalCard) {
         selectedCard = externalCard;
         replaceFragment(CscFragment.newInstance(externalCard), false);
     }
 
+    /**
+     * Shows progress bar.
+     */
     public void showProgressBar() {
         setProgressBarIndeterminateVisibility(true);
     }
 
+    /**
+     * Hides progress bar.
+     */
     public void hideProgressBar() {
         setProgressBarIndeterminateVisibility(false);
     }
 
+    /**
+     * Proceeds to the next step of a payment.
+     */
     public void proceed() {
         subscription = performPaymentOperation(process::proceed);
     }
 
+    /**
+     * Repeats current step of a payment.
+     */
     public void repeat() {
         subscription = performPaymentOperation(process::repeat);
     }
 
+    /**
+     * Resets current payment process.
+     */
     public void reset() {
         selectedCard = null;
         process.reset();
         proceed();
     }
 
+    /**
+     * Cancels payment process.
+     */
     public void cancel() {
         selectedCard = null;
         if (subscription != null) {
@@ -253,13 +323,13 @@ public final class PaymentActivity extends Activity {
         }
     }
 
+    @NonNull
     private Subscription performPaymentOperation(@NonNull Callable<Boolean> operation) {
         return performOperation(operation, aBoolean -> handleProcess());
     }
 
-    private <T> Subscription performOperation(@NonNull final Callable<T> operation,
-                                      @NonNull final Action1<T> onResponse) {
-
+    @NonNull
+    private <T> Subscription performOperation(@NonNull Callable<T> operation, @NonNull Action1<T> onResponse) {
         showProgressBar();
         return Observable.fromCallable(operation)
                 .subscribeOn(Schedulers.io())
@@ -299,18 +369,18 @@ public final class PaymentActivity extends Activity {
                         return host;
                     }
                 })
-                .setDebugMode(!"https://money.yandex.ru".equals(host))
+                .setDebugMode(!PRODUCTION_HOST.equals(host))
                 .create();
 
         parameterProvider = new ExternalPaymentProcess.ParameterProvider() {
             @Override
             public String getPatternId() {
-                return arguments.getPatternId();
+                return arguments.patternId;
             }
 
             @Override
             public Map<String, String> getPaymentParameters() {
-                return arguments.getParams();
+                return arguments.paymentParams;
             }
 
             @Override
@@ -327,12 +397,12 @@ public final class PaymentActivity extends Activity {
 
             @Override
             public String getExtAuthSuccessUri() {
-                return PaymentArguments.EXT_AUTH_SUCCESS_URI;
+                return Constants.EXT_AUTH_SUCCESS_URI;
             }
 
             @Override
             public String getExtAuthFailUri() {
-                return PaymentArguments.EXT_AUTH_FAIL_URI;
+                return Constants.EXT_AUTH_FAIL_URI;
             }
 
             @Override
@@ -363,7 +433,7 @@ public final class PaymentActivity extends Activity {
         return true;
     }
 
-    private void onExternalPaymentReceived(RequestExternalPayment rep) {
+    private void onExternalPaymentReceived(@NonNull RequestExternalPayment rep) {
         if (rep.status == BaseRequestPayment.Status.SUCCESS) {
             if (immediateProceed && cards.size() == 0) {
                 proceed();
@@ -375,7 +445,7 @@ public final class PaymentActivity extends Activity {
         }
     }
 
-    private void onExternalPaymentProcessed(ProcessExternalPayment pep) {
+    private void onExternalPaymentProcessed(@NonNull ProcessExternalPayment pep) {
         switch (pep.status) {
             case SUCCESS:
                 Fragment fragment = getCurrentFragment();
@@ -398,7 +468,7 @@ public final class PaymentActivity extends Activity {
         hideProgressBar();
     }
 
-    private void replaceFragment(Fragment fragment, boolean clearBackStack) {
+    private void replaceFragment(@Nullable Fragment fragment, boolean clearBackStack) {
         if (fragment == null) {
             return;
         }
@@ -419,6 +489,7 @@ public final class PaymentActivity extends Activity {
         hideKeyboard();
     }
 
+    @Nullable
     private Fragment getCurrentFragment() {
         return getFragmentManager().findFragmentById(R.id.ym_container);
     }
@@ -438,68 +509,116 @@ public final class PaymentActivity extends Activity {
         }
     }
 
-    public interface PaymentParamsBuilder {
-        AppClientIdBuilder setPaymentParams(String patternId, Map<String, String> paymentParams);
-        AppClientIdBuilder setPaymentParams(PaymentParams paymentParams);
+    /**
+     * Implementations of this interface sets payment parameters.
+     */
+    public interface PaymentParamsBuilder extends Builder {
+
+        /**
+         * Sets raw payment parameters.
+         *
+         * @param patternId pattern id
+         * @param paymentParams payment parameters
+         * @return {@link Builder}
+         */
+        @NonNull
+        Builder setPaymentParams(@NonNull String patternId, @NonNull Map<String, String> paymentParams);
+
+        /**
+         * Sets payment parameters.
+         *
+         * @param paymentParams instance of {@link PaymentParams}
+         * @return {@link Builder}
+         */
+        @NonNull
+        Builder setPaymentParams(@Nullable PaymentParams paymentParams);
     }
 
-    public interface AppClientIdBuilder {
-        Builder setClientId(String clientId);
-    }
-
+    /**
+     * Implementation of this interface add additional info
+     */
     public interface Builder {
-        Builder setHost(String host);
+
+        /**
+         * Sets client id.
+         *
+         * @param clientId client id
+         * @return itself
+         */
+        @NonNull
+        Builder setClientId(@Nullable String clientId);
+
+        /**
+         * Sets desired host for testing purposes.
+         *
+         * @param host host to use
+         * @return itself
+         */
+        @NonNull
+        Builder setHost(@Nullable String host);
+
+        /**
+         * Creates an intent that can be used to start payment process.
+         *
+         * @return {@link Intent} object
+         */
+        @NonNull
         Intent build();
     }
 
-    private final static class IntentBuilder
-            implements PaymentParamsBuilder, AppClientIdBuilder, Builder {
+    private final static class IntentBuilder implements PaymentParamsBuilder {
 
         @NonNull
         private final Context context;
 
-        private String patternId;
-        private Map<String, String> paymentParams;
+        private PaymentParams params;
 
-        private String host;
+        private String host = PRODUCTION_HOST;
         private String clientId;
 
-        public IntentBuilder(@NonNull Context context) {
+        IntentBuilder(@NonNull Context context) {
             this.context = context;
-            this.host = ApiClientWrapper.PRODUCTION_HOST;
         }
 
-        public AppClientIdBuilder setPaymentParams(String patternId,
-                                                   Map<String, String> paymentParams) {
-            this.patternId = patternId;
-            this.paymentParams = paymentParams;
+        @NonNull
+        @Override
+        public Builder setPaymentParams(@NonNull String patternId,
+                                                   @NonNull Map<String, String> paymentParams) {
+            this.params = new ShopParams(patternId, paymentParams);
             return this;
         }
 
-        public AppClientIdBuilder setPaymentParams(PaymentParams paymentParams) {
-            this.patternId = paymentParams.patternId;
-            this.paymentParams = paymentParams.paymentParams;
+        @NonNull
+        @Override
+        public Builder setPaymentParams(@Nullable PaymentParams paymentParams) {
+            this.params = paymentParams;
             return this;
         }
 
-        public IntentBuilder setClientId(String clientId) {
+        @NonNull
+        @Override
+        public Builder setClientId(@Nullable String clientId) {
             this.clientId = clientId;
             return this;
         }
 
-        public Builder setHost(String host) {
+        @NonNull
+        @Override
+        public Builder setHost(@Nullable String host) {
             this.host = host;
             return this;
         }
 
+        @NonNull
+        @Override
         public Intent build() {
             return createIntent()
-                    .putExtra(EXTRA_ARGUMENTS, new PaymentArguments(patternId, paymentParams).
-                            toBundle())
+                    .putExtra(EXTRA_ARGUMENTS, PaymentExtras.toBundle(params))
                     .putExtra(EXTRA_HOST, host)
                     .putExtra(EXTRA_CLIENT_ID, clientId);
         }
 
+        @NonNull
         private Intent createIntent() {
             return new Intent(context, PaymentActivity.class);
         }

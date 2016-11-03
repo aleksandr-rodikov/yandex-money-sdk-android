@@ -27,7 +27,7 @@ package ru.yandex.money.android;
 import android.content.Intent;
 
 /**
- * @author vyasevich
+ * @deprecated this class will be removed in future major release
  */
 public interface IntentHandler {
     public void handle(Intent intent);

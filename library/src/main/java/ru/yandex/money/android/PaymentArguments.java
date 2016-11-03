@@ -32,8 +32,10 @@ import java.util.Map;
 import ru.yandex.money.android.utils.Bundles;
 
 /**
- * @author vyasevich
+ * @deprecated this class will be removed in future major release, use instance of
+ * {@link com.yandex.money.api.methods.params.PaymentParams} instead
  */
+@Deprecated
 public class PaymentArguments {
 
     public static final String EXT_AUTH_SUCCESS_URI = "yandex-money-sdk-android://success";

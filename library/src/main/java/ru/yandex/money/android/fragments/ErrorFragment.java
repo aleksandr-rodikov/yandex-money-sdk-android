@@ -25,6 +25,8 @@
 package ru.yandex.money.android.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,11 +49,13 @@ public class ErrorFragment extends PaymentFragment {
     private static final String KEY_ERROR = "error";
     private static final String KEY_STATUS = "status";
 
+    @NonNull
     public static ErrorFragment newInstance() {
         return newInstance(null, null);
     }
 
-    public static ErrorFragment newInstance(Error error, String status) {
+    @NonNull
+    public static ErrorFragment newInstance(@Nullable Error error, @Nullable String status) {
         Bundle args = new Bundle();
         args.putSerializable(KEY_ERROR, error);
         args.putString(KEY_STATUS, status);

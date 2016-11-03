@@ -25,6 +25,8 @@
 package ru.yandex.money.android.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,7 +58,8 @@ public class SuccessFragment extends PaymentFragment {
     private View successMarker;
     private TextView description;
 
-    public static SuccessFragment newInstance(BigDecimal contractAmount, ExternalCard moneySource) {
+    @NonNull
+    public static SuccessFragment newInstance(@NonNull BigDecimal contractAmount, @Nullable ExternalCard moneySource) {
         Bundle args = new Bundle();
         args.putString(KEY_CONTRACT_AMOUNT, contractAmount.toPlainString());
         if (moneySource != null) {

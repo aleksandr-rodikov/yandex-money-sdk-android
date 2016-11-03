@@ -24,40 +24,21 @@
 
 package ru.yandex.money.android;
 
-import com.yandex.money.api.net.clients.DefaultApiClient;
-
-import static com.yandex.money.api.util.Common.checkNotEmpty;
-
 /**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
+ * Holds commonly used constants.
  */
-final class ApiClientWrapper extends DefaultApiClient {
+public final class Constants {
 
-    final static String PRODUCTION_HOST = "https://money.yandex.ru";
+    /**
+     * Success URI.
+     */
+    public static final String EXT_AUTH_SUCCESS_URI = "yandex-money-sdk-android://success";
 
-    private final boolean sandbox;
+    /**
+     * Fail URI.
+     */
+    public static final String EXT_AUTH_FAIL_URI = "yandex-money-sdk-android://fail";
 
-    private ApiClientWrapper(Builder builder) {
-        super(builder);
-        sandbox = !checkNotEmpty(builder.url, "url").equals(PRODUCTION_HOST);
-    }
-
-    boolean isSandbox() {
-        return sandbox;
-    }
-
-    static final class Builder extends DefaultApiClient.Builder {
-
-        private String url;
-
-        public Builder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
-
-        @Override
-        public ApiClientWrapper create() {
-            return new ApiClientWrapper(this);
-        }
+    private Constants() {
     }
 }

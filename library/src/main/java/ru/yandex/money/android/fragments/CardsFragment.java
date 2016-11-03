@@ -26,6 +26,7 @@ package ru.yandex.money.android.fragments;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,15 +35,17 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
 import com.yandex.money.api.model.ExternalCard;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.database.DatabaseStorage;
 import ru.yandex.money.android.formatters.MoneySourceFormatter;
 import ru.yandex.money.android.utils.CardType;
 import ru.yandex.money.android.utils.Views;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * @author vyasevich
@@ -57,6 +60,7 @@ public class CardsFragment extends PaymentFragment {
     private DatabaseStorage databaseStorage;
     private ViewGroup bankCards;
 
+    @NonNull
     public static CardsFragment newInstance(String title, BigDecimal contractAmount) {
         Bundle args = new Bundle();
         args.putString(KEY_TITLE, title);

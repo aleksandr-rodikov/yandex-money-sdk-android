@@ -26,7 +26,7 @@ package ru.yandex.money.android.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +43,7 @@ import com.yandex.money.api.net.ParametersBuffer;
 
 import java.util.Map;
 
-import ru.yandex.money.android.PaymentArguments;
+import ru.yandex.money.android.Constants;
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.utils.Bundles;
 import ru.yandex.money.android.utils.Views;
@@ -59,14 +59,7 @@ public final class WebFragment extends PaymentFragment {
     private WebView webView;
     private View errorView;
 
-    public static WebFragment newInstance(String url, Map<String, String> postData) {
-        if (TextUtils.isEmpty(url)) {
-            throw new IllegalArgumentException("url is null or empty");
-        }
-        if (postData == null) {
-            throw new NullPointerException("postData is null");
-        }
-
+    public static WebFragment newInstance(@NonNull String url, @NonNull Map<String, String> postData) {
         Bundle args = new Bundle();
         args.putString(KEY_URL, url);
         args.putBundle(KEY_POST_DATA, Bundles.writeStringMapToBundle(postData));
@@ -152,11 +145,11 @@ public final class WebFragment extends PaymentFragment {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Log.d("WebViewClient", "loading " + url);
             boolean completed = false;
-            if (url.contains(PaymentArguments.EXT_AUTH_SUCCESS_URI)) {
+            if (url.contains(Constants.EXT_AUTH_SUCCESS_URI)) {
                 completed = true;
                 webView.setVisibility(View.GONE);
                 proceed();
-            } else if (url.contains(PaymentArguments.EXT_AUTH_FAIL_URI)) {
+            } else if (url.contains(Constants.EXT_AUTH_FAIL_URI)) {
                 completed = true;
                 showError(Error.AUTHORIZATION_REJECT, null);
             }

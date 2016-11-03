@@ -25,18 +25,18 @@
 package ru.yandex.money.android.test;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 
 import com.robotium.solo.Condition;
 import com.robotium.solo.Solo;
-import com.yandex.money.api.methods.params.PhoneParams;
+import com.yandex.money.api.methods.params.PaymentParams;
 
 import java.util.concurrent.TimeUnit;
 
 import ru.yandex.money.android.PaymentActivity;
-import ru.yandex.money.android.PaymentArguments;
 import ru.yandex.money.android.test.espresso.ViewGroupInteraction;
 import ru.yandex.money.android.test.properties.LocalProperties;
 import ru.yandex.money.android.test.properties.TestProperties;
@@ -319,10 +319,8 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
         protected abstract void execute();
 
         private void setUp() {
-            PaymentArguments arguments = createArguments();
-
             Intent intent = PaymentActivity.getBuilder(getInstrumentation().getContext())
-                    .setPaymentParams(arguments.getPatternId(), arguments.getParams())
+                    .setPaymentParams(createArguments())
                     .setClientId(clientId)
                     .setHost(localProperties.getHostUrl())
                     .build();
@@ -331,9 +329,9 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
             solo = new Solo(getInstrumentation(), getActivity());
         }
 
-        private PaymentArguments createArguments() {
-            PhoneParams params = localProperties.getPhoneParams();
-            return new PaymentArguments(params.patternId, params.paymentParams);
+        @NonNull
+        private PaymentParams createArguments() {
+            return localProperties.getPhoneParams();
         }
     }
 

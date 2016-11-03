@@ -26,28 +26,47 @@ package ru.yandex.money.android;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
- * @author Dmitriy Melnikov (dvmelnikov@yamoney.ru)
+ * Holds library preferences.
  */
 public final class Prefs {
 
     private static final String PREFS_NAME = "ru.yandex.money.android.preferences";
     private static final String PREF_INSTANCE_ID = "ru.yandex.money.android.instanceId";
 
+    @NonNull
     private final SharedPreferences prefs;
 
-    public Prefs(Context context) {
+    /**
+     * Creates an instance of {@link Prefs}.
+     *
+     * @param context current context
+     */
+    public Prefs(@NonNull Context context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    public void storeInstanceId(String instanceId) {
+    /**
+     * Stores instance id to preferences.
+     *
+     * @param instanceId instance id
+     */
+    public void storeInstanceId(@Nullable String instanceId) {
         prefs.edit()
                 .putString(PREF_INSTANCE_ID, instanceId)
                 .apply();
     }
 
-    public String restoreInstanceId() {
-        return prefs.getString(PREF_INSTANCE_ID, "");
+    /**
+     * Gets instance id from preferences.
+     *
+     * @return instance id or {@code null} if preferences do not contain this parameter
+     */
+    @Nullable
+    String restoreInstanceId() {
+        return prefs.getString(PREF_INSTANCE_ID, null);
     }
 }
