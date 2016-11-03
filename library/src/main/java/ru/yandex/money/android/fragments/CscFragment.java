@@ -26,6 +26,7 @@ package ru.yandex.money.android.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.InputFilter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,7 +38,6 @@ import android.widget.TextView;
 
 import com.yandex.money.api.model.ExternalCard;
 
-import ru.yandex.money.android.PaymentActivity;
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.formatters.MoneySourceFormatter;
 import ru.yandex.money.android.parcelables.ExternalCardParcelable;
@@ -45,11 +45,13 @@ import ru.yandex.money.android.utils.CardType;
 import ru.yandex.money.android.utils.Views;
 
 /**
- * @author vyasevich
+ * Shows form allowing user to enter card security code (CSC, a.k.a. CVV or CVC) to proceed with payment.
  */
-public class CscFragment extends PaymentFragment {
+public final class CscFragment extends PaymentFragment {
 
     private ExternalCard moneySource;
+
+    @Nullable
     private String csc;
 
     private LinearLayout error;
@@ -58,10 +60,16 @@ public class CscFragment extends PaymentFragment {
     private EditText cscEditText;
     private Button pay;
 
+    /**
+     * Creates an instance of {@link CscFragment}.
+     *
+     * @param card saved card
+     * @return instance of {@link CscFragment}
+     */
     @NonNull
-    public static CscFragment newInstance(@NonNull ExternalCard moneySource) {
+    public static CscFragment newInstance(@NonNull ExternalCard card) {
         Bundle args = new Bundle();
-        args.putParcelable(KEY_MONEY_SOURCE, new ExternalCardParcelable(moneySource));
+        args.putParcelable(KEY_MONEY_SOURCE, new ExternalCardParcelable(card));
 
         CscFragment fragment = new CscFragment();
         fragment.setArguments(args);
@@ -70,7 +78,6 @@ public class CscFragment extends PaymentFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         Bundle args = getArguments();
         assert args != null : "provide correct arguments for CscFragment";
 
@@ -95,25 +102,20 @@ public class CscFragment extends PaymentFragment {
                 getString(MoneySourceFormatter.getCscNumberType(cardType)),
                 getString(MoneySourceFormatter.getCscNumberLocation(cardType))));
 
-        view.findViewById(R.id.ym_cancel)
-                .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onCancelClicked();
-            }
-        });
+        view.findViewById(R.id.ym_cancel).setOnClickListener(v -> onCancelClicked());
 
         pay = (Button) view.findViewById(R.id.ym_pay);
-        pay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onPayClicked();
-            }
-        });
+        pay.setOnClickListener(v -> onPayClicked());
 
         return view;
     }
 
+    /**
+     * Gets CSC.
+     *
+     * @return CSC
+     */
+    @Nullable
     public String getCsc() {
         return csc;
     }
@@ -133,12 +135,9 @@ public class CscFragment extends PaymentFragment {
     }
 
     private void onCancelClicked() {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.cancel();
-                activity.showCards();
-            }
+        startActionSafely(activity -> {
+            activity.cancel();
+            activity.showCards();
         });
     }
 

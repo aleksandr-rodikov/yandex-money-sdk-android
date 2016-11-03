@@ -35,25 +35,36 @@ import android.widget.Button;
 
 import com.yandex.money.api.model.Error;
 
-import ru.yandex.money.android.PaymentActivity;
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.utils.Views;
 
 /**
- * @author vyasevich
+ * Shows error of payment operation.
  */
-public class ErrorFragment extends PaymentFragment {
+public final class ErrorFragment extends PaymentFragment {
 
     private static final String TAG = ErrorFragment.class.getName();
 
     private static final String KEY_ERROR = "error";
     private static final String KEY_STATUS = "status";
 
+    /**
+     * Creates new instance of {@link ErrorFragment} for unknown error.
+     *
+     * @return instance of {@link ErrorFragment}
+     */
     @NonNull
     public static ErrorFragment newInstance() {
         return newInstance(null, null);
     }
 
+    /**
+     * Creates new instance of {@link ErrorFragment}.
+     *
+     * @param error error
+     * @param status operation status
+     * @return instance of {@link ErrorFragment}
+     */
     @NonNull
     public static ErrorFragment newInstance(@Nullable Error error, @Nullable String status) {
         Bundle args = new Bundle();
@@ -77,7 +88,7 @@ public class ErrorFragment extends PaymentFragment {
         return view;
     }
 
-    private void showError(View view, Error error, String status) {
+    private void showError(@NonNull View view, @Nullable Error error, @Nullable String status) {
         Log.e(TAG, String.format("error=%1$s,status=%2$s", error, status));
 
         final int notSpecified = -1;
@@ -126,18 +137,10 @@ public class ErrorFragment extends PaymentFragment {
         } else {
             action.setText(getString(actionResId));
             action.setVisibility(View.VISIBLE);
-            action.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActionSafely(new Action() {
-                        @Override
-                        public void start(PaymentActivity activity) {
-                            action.setEnabled(false);
-                            activity.reset();
-                        }
-                    });
-                }
-            });
+            action.setOnClickListener(v -> startActionSafely(activity -> {
+                action.setEnabled(false);
+                activity.reset();
+            }));
         }
     }
 }

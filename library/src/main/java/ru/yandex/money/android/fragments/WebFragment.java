@@ -25,6 +25,8 @@
 package ru.yandex.money.android.fragments;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -49,7 +51,7 @@ import ru.yandex.money.android.utils.Bundles;
 import ru.yandex.money.android.utils.Views;
 
 /**
- * @author vyasevich
+ * Provides {@link WebView} functionality for payment processes.
  */
 public final class WebFragment extends PaymentFragment {
 
@@ -59,6 +61,14 @@ public final class WebFragment extends PaymentFragment {
     private WebView webView;
     private View errorView;
 
+    /**
+     * Creates an instance of {@link WebFragment}.
+     *
+     * @param url url to open
+     * @param postData data to POST
+     * @return instance of {@link WebFragment}
+     */
+    @NonNull
     public static WebFragment newInstance(@NonNull String url, @NonNull Map<String, String> postData) {
         Bundle args = new Bundle();
         args.putString(KEY_URL, url);
@@ -70,9 +80,7 @@ public final class WebFragment extends PaymentFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.ym_web_fragment, container, false);
         setUpWebView(layout);
         setUpMessageView(layout);
@@ -86,7 +94,7 @@ public final class WebFragment extends PaymentFragment {
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void setUpWebView(View layout) {
+    private void setUpWebView(@NonNull View layout) {
         webView = (WebView) layout.findViewById(R.id.web_view);
         webView.setVisibility(View.VISIBLE);
         webView.setWebViewClient(new Client());
@@ -94,7 +102,7 @@ public final class WebFragment extends PaymentFragment {
         webView.getSettings().setJavaScriptEnabled(true);
     }
 
-    private void setUpMessageView(View layout) {
+    private void setUpMessageView(@NonNull View layout) {
         errorView = layout.findViewById(R.id.error_view);
 
         final int titleResId = R.string.ym_error_something_wrong_title;
@@ -105,23 +113,25 @@ public final class WebFragment extends PaymentFragment {
         Views.setText(errorView, R.id.ym_error_title, getString(titleResId));
         Views.setText(errorView, R.id.ym_error_message, getString(messageResId));
         action.setText(getString(actionResId));
-        action.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                webView.reload();
-            }
-        });
+        action.setOnClickListener(v -> webView.reload());
     }
 
-    private void loadPage(String url, Map<String, String> postParams) {
+    private void loadPage(@NonNull String url, @NonNull Map<String, String> postParams) {
         hideError();
         webView.postUrl(url, buildPostData(postParams));
     }
 
     private void loadPage() {
         Bundle args = getArguments();
-        loadPage(args.getString(KEY_URL), Bundles.readStringMapFromBundle(
-                args.getBundle(KEY_POST_DATA)));
+
+        String url = args.getString(KEY_URL);
+        Bundle postData = args.getBundle(KEY_POST_DATA);
+        if (url == null || postData == null) {
+            showError();
+            return;
+        }
+
+        loadPage(url, Bundles.readStringMapFromBundle(postData));
     }
 
     private void showError() {
@@ -134,15 +144,40 @@ public final class WebFragment extends PaymentFragment {
         webView.setVisibility(View.VISIBLE);
     }
 
-    private byte[] buildPostData(Map<String, String> postParams) {
+    @NonNull
+    private byte[] buildPostData(@NonNull Map<String, String> postParams) {
         return new ParametersBuffer()
                 .setParameters(postParams)
                 .prepareBytes();
     }
 
     private class Client extends WebViewClient {
+        @SuppressWarnings("deprecation") // to support operating systems with integrated API < 24
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return shouldOverrideUrlLoading(url) || super.shouldOverrideUrlLoading(view, url);
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return shouldOverrideUrlLoading(request.getUrl().toString()) ||
+                    super.shouldOverrideUrlLoading(view, request);
+        }
+
+        @SuppressWarnings("deprecation") // to support operating systems with integrated API < 23
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            onReceivedError(view, null, null);
+        }
+
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            hideProgressBar();
+            showError();
+        }
+
+        private boolean shouldOverrideUrlLoading(@NonNull String url) {
             Log.d("WebViewClient", "loading " + url);
             boolean completed = false;
             if (url.contains(Constants.EXT_AUTH_SUCCESS_URI)) {
@@ -156,19 +191,7 @@ public final class WebFragment extends PaymentFragment {
             if (completed) {
                 hideProgressBar();
             }
-            return completed || super.shouldOverrideUrlLoading(view, url);
-        }
-
-        @SuppressWarnings("deprecation") // to support operating systems with integrated API < 23
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            onReceivedError(view, null, null);
-        }
-
-        @Override
-        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            hideProgressBar();
-            showError();
+            return completed;
         }
     }
 

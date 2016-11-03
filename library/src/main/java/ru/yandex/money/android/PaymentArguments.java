@@ -55,7 +55,7 @@ public class PaymentArguments {
     public PaymentArguments(Bundle bundle) {
         patternId = bundle.getString(EXTRA_PATTERN_ID);
         Bundle parameters = bundle.getBundle(EXTRA_PARAMS);
-        params = Collections.unmodifiableMap(Bundles.readStringMapFromBundle(parameters));
+        params = parameters == null ? null : Collections.unmodifiableMap(Bundles.readStringMapFromBundle(parameters));
     }
 
     public Bundle toBundle() {

@@ -27,6 +27,7 @@ package ru.yandex.money.android.fragments;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -39,8 +40,10 @@ import android.widget.TextView;
 import com.yandex.money.api.model.ExternalCard;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
+import ru.yandex.money.android.PaymentActivity;
 import ru.yandex.money.android.R;
 import ru.yandex.money.android.database.DatabaseStorage;
 import ru.yandex.money.android.formatters.MoneySourceFormatter;
@@ -48,23 +51,30 @@ import ru.yandex.money.android.utils.CardType;
 import ru.yandex.money.android.utils.Views;
 
 /**
- * @author vyasevich
+ * Fragment that shows a list of saved bank allowing a user to pay with a new card. Also shows payment details, such as
+ * contract amount and shop's title.
  */
-public class CardsFragment extends PaymentFragment {
+public final class CardsFragment extends PaymentFragment {
 
     private static final String KEY_TITLE = "title";
     private static final String KEY_CONTRACT_AMOUNT = "contractAmount";
 
     private int orientation;
     private PopupMenu menu;
-    private DatabaseStorage databaseStorage;
     private ViewGroup bankCards;
 
+    /**
+     * Creates new instance of {@link CardsFragment}.
+     *
+     * @param title shop's title
+     * @param contractAmount contract amount
+     * @return instance of {@link CardsFragment}
+     */
     @NonNull
-    public static CardsFragment newInstance(String title, BigDecimal contractAmount) {
+    public static CardsFragment newInstance(@NonNull String title, @NonNull BigDecimal contractAmount) {
         Bundle args = new Bundle();
         args.putString(KEY_TITLE, title);
-        args.putString(KEY_CONTRACT_AMOUNT, contractAmount.toPlainString());
+        args.putSerializable(KEY_CONTRACT_AMOUNT, contractAmount.toPlainString());
 
         CardsFragment fragment = new CardsFragment();
         fragment.setArguments(args);
@@ -72,10 +82,7 @@ public class CardsFragment extends PaymentFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.ym_cards_fragment, container, false);
         assert view != null : "view is null";
 
@@ -86,19 +93,13 @@ public class CardsFragment extends PaymentFragment {
         Views.setText(view, R.id.ym_payment_sum, getString(R.string.ym_cards_payment_sum_value,
                 new BigDecimal(args.getString(KEY_CONTRACT_AMOUNT))));
 
-        databaseStorage = new DatabaseStorage(getPaymentActivity()); // todo reuse instance from PaymentActivity
         bankCards = (ViewGroup) view.findViewById(android.R.id.list);
 
         for (int i = 0; i < getCards().size(); i++) {
             final ExternalCard externalCard = getCards().get(i);
             final View card = inflater.inflate(R.layout.ym_card_item, bankCards, false);
             bankCards.addView(card);
-            card.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showCsc(externalCard);
-                }
-            });
+            card.setOnClickListener(v -> showCsc(externalCard));
 
             final TextView panFragment = (TextView) card.findViewById(R.id.ym_pan_fragment);
             panFragment.setText(MoneySourceFormatter.formatPanFragment(externalCard));
@@ -106,22 +107,12 @@ public class CardsFragment extends PaymentFragment {
 
             final ImageButton button = (ImageButton) view.findViewById(R.id.ym_actions);
             final int iFinal = i;
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showPopup(v, iFinal, externalCard);
-                }
-            });
+            button.setOnClickListener(v -> showPopup(v, iFinal, externalCard));
         }
 
         View cardsFooter = inflater.inflate(R.layout.ym_cards_footer, bankCards, false);
         bankCards.addView(cardsFooter);
-        cardsFooter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                proceed();
-            }
-        });
+        cardsFooter.setOnClickListener(v -> proceed());
 
         orientation = getResources()
                 .getConfiguration()
@@ -129,22 +120,27 @@ public class CardsFragment extends PaymentFragment {
         return view;
     }
 
+    @NonNull
     private List<ExternalCard> getCards() {
-        return getPaymentActivity().getCards();
+        PaymentActivity activity = getPaymentActivity();
+        return activity == null ? Collections.emptyList() : activity.getCards();
     }
 
-    private void showPopup(View v, int position, ExternalCard moneySource) {
+    private void showPopup(@NonNull View v, int position, @Nullable ExternalCard card) {
         menu = new PopupMenu(getPaymentActivity(), v);
         MenuInflater inflater = menu.getMenuInflater();
         inflater.inflate(R.menu.ym_card_actions, menu.getMenu());
-        menu.setOnMenuItemClickListener(new MenuItemClickListener(moneySource, position));
+        menu.setOnMenuItemClickListener(new MenuItemClickListener(card, position));
         menu.show();
     }
 
-    private void deleteCard(ExternalCard moneySource, int position) {
-        databaseStorage.deleteExternalCard(moneySource);
+    private void deleteCard(@Nullable ExternalCard card, int position) {
+        DatabaseStorage storage = getDatabaseStorage();
+        if (storage == null) return;
+
+        storage.deleteExternalCard(card);
         bankCards.removeViewAt(position);
-        getCards().remove(moneySource);
+        getCards().remove(card);
     }
 
     @Override
@@ -158,18 +154,19 @@ public class CardsFragment extends PaymentFragment {
 
     private class MenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
 
-        private final ExternalCard moneySource;
+        @Nullable
+        private final ExternalCard card;
         private final int position;
 
-        public MenuItemClickListener(ExternalCard moneySource, int position) {
-            this.moneySource = moneySource;
+        MenuItemClickListener(@Nullable ExternalCard card, int position) {
+            this.card = card;
             this.position = position;
         }
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             if (item.getItemId() == R.id.ym_delete) {
-                deleteCard(moneySource, position);
+                deleteCard(card, position);
                 menu = null;
                 return true;
             }

@@ -46,9 +46,10 @@ final class PaymentExtras {
         String patternId = bundle.getString(EXTRA_PATTERN_ID);
         if (patternId == null) throw new NullPointerException(EXTRA_PATTERN_ID);
 
-        Map<String, String> params = Bundles.readStringMapFromBundle(bundle.getBundle(EXTRA_PARAMS));
+        Bundle params = bundle.getBundle(EXTRA_PARAMS);
         if (params == null) throw new NullPointerException(EXTRA_PARAMS);
 
-        return new ShopParams(patternId, params);
+        Map<String, String> paymentParams = Bundles.readStringMapFromBundle(params);
+        return new ShopParams(patternId, paymentParams);
     }
 }

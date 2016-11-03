@@ -107,6 +107,8 @@ public final class PaymentActivity extends Activity {
     private ExternalPaymentProcess.ParameterProvider parameterProvider;
 
     private PaymentParams arguments;
+
+    private DatabaseStorage databaseStorage;
     private List<ExternalCard> cards;
 
     private boolean immediateProceed = true;
@@ -142,7 +144,9 @@ public final class PaymentActivity extends Activity {
         hideProgressBar();
 
         arguments = PaymentExtras.fromBundle(getIntent().getBundleExtra(EXTRA_ARGUMENTS));
-        cards = new DatabaseStorage(this).selectExternalCards();
+
+        databaseStorage = new DatabaseStorage(this);
+        cards = databaseStorage.selectExternalCards();
 
         if (!initPaymentProcess()) return;
 
@@ -210,6 +214,16 @@ public final class PaymentActivity extends Activity {
     }
 
     /**
+     * Gets an instance of {@link DatabaseStorage}.
+     *
+     * @return instance of {@link DatabaseStorage}
+     */
+    @NonNull
+    public DatabaseStorage getDatabaseStorage() {
+        return databaseStorage;
+    }
+
+    /**
      * Gets list of saved cards.
      *
      * @return list of saved card
@@ -235,7 +249,7 @@ public final class PaymentActivity extends Activity {
      * Shows {@link CardsFragment}.
      */
     public void showCards() {
-        RequestExternalPayment rep = (RequestExternalPayment) process.getRequestPayment();
+        BaseRequestPayment rep = process.getRequestPayment();
         replaceFragment(CardsFragment.newInstance(rep.title, rep.contractAmount), true);
     }
 
@@ -391,8 +405,7 @@ public final class PaymentActivity extends Activity {
             @Override
             public String getCsc() {
                 Fragment fragment = getCurrentFragment();
-                return fragment instanceof CscFragment ?
-                        ((CscFragment) fragment).getCsc() : null;
+                return fragment instanceof CscFragment ? ((CscFragment) fragment).getCsc() : null;
             }
 
             @Override

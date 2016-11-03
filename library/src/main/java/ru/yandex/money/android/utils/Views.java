@@ -24,40 +24,84 @@
 
 package ru.yandex.money.android.utils;
 
+import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
+import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-/**
- * @author vyasevich
- */
-public class Views {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-    public static void setText(View container, int viewId, String text) {
+/**
+ * Helper class to work with {@link View}s safely.
+ */
+public final class Views {
+
+    private Views() {
+    }
+
+    /**
+     * Sets text to a view that contained in container.
+     *
+     * @param container container view
+     * @param viewId child view id
+     * @param text text to set
+     */
+    public static void setText(@NonNull View container, @IdRes int viewId, @Nullable String text) {
         TextView textView = (TextView) container.findViewById(viewId);
         if (textView != null) {
             textView.setText(text);
         }
     }
 
-    public static String getTextSafely(EditText editText) {
+    /**
+     * Tries safely to get text from an instance of {@link EditText}.
+     *
+     * @param editText instance of {@link EditText}
+     * @return text
+     */
+    @Nullable
+    public static String getTextSafely(@NonNull EditText editText) {
         Editable text = editText.getText();
         return text == null ? null : text.toString();
     }
 
-    public static void setImageResource(View container, int viewId, int resId) {
+    /**
+     * Sets image to a view that contained in container.
+     *
+     * @param container container view
+     * @param viewId child view id
+     * @param resId drawable resource id
+     */
+    public static void setImageResource(@NonNull View container, @IdRes int viewId, @DrawableRes int resId) {
         ImageView imageView = (ImageView) container.findViewById(viewId);
         if (imageView != null) {
             imageView.setImageResource(resId);
         }
     }
 
-    public static void setVisibility(View container, int viewId, int visibility) {
+    /**
+     * Sets visibility to a view that contained in container.
+     *
+     * @param container container view
+     * @param viewId child view id
+     * @param visibility visibility constant
+     */
+    public static void setVisibility(@NonNull View container, @IdRes int viewId, @Visibility int visibility) {
         View view = container.findViewById(viewId);
         if (view != null) {
             view.setVisibility(visibility);
         }
+    }
+
+    @IntDef({ View.GONE, View.INVISIBLE, View.VISIBLE })
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface Visibility {
     }
 }

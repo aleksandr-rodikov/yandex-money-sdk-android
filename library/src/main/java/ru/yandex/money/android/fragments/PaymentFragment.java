@@ -25,85 +25,110 @@
 package ru.yandex.money.android.fragments;
 
 import android.app.Fragment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.model.ExternalCard;
 
 import ru.yandex.money.android.PaymentActivity;
+import ru.yandex.money.android.database.DatabaseStorage;
 
 /**
- * @author vyasevich
+ * Base class for all fragments that take part in payment process.
  */
-public abstract class PaymentFragment extends Fragment {
+abstract class PaymentFragment extends Fragment {
 
-    protected static final String KEY_MONEY_SOURCE = "moneySource";
+    /**
+     * Key for money source.
+     */
+    static final String KEY_MONEY_SOURCE = "moneySource";
 
-    protected PaymentActivity getPaymentActivity() {
+    /**
+     * Gets database storage if a fragment is attached to payment activity
+     *
+     * @return database storage or {@code null}
+     */
+    @Nullable
+    DatabaseStorage getDatabaseStorage() {
+        PaymentActivity activity = getPaymentActivity();
+        return activity == null ? null : activity.getDatabaseStorage();
+    }
+
+    /**
+     * Gets attached payment activity or {@code null}. May throw {@link ClassCastException} if a fragment attached to
+     * other activity type.
+     *
+     * @return attached {@link PaymentActivity} or null
+     */
+    @Nullable
+    PaymentActivity getPaymentActivity() {
         return (PaymentActivity) getActivity();
     }
 
-    protected void proceed() {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.proceed();
-            }
-        });
+    /**
+     * @see PaymentActivity#proceed()
+     */
+    void proceed() {
+        startActionSafely(PaymentActivity::proceed);
     }
 
-    protected void repeat() {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.repeat();
-            }
-        });
+    /**
+     * @see PaymentActivity#repeat()
+     */
+    void repeat() {
+        startActionSafely(PaymentActivity::repeat);
     }
 
-    protected void showError(final Error error, final String status) {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.showError(error, status);
-            }
-        });
+    /**
+     * @see PaymentActivity#showError(Error, String)
+     */
+    void showError(final Error error, final String status) {
+        startActionSafely(activity -> activity.showError(error, status));
     }
 
-    protected void showCsc(final ExternalCard moneySource) {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.showCsc(moneySource);
-            }
-        });
+    /**
+     * @see PaymentActivity#showCsc(ExternalCard)
+     */
+    void showCsc(final ExternalCard moneySource) {
+        startActionSafely(activity -> activity.showCsc(moneySource));
     }
 
-    protected void showProgressBar() {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.showProgressBar();
-            }
-        });
+    /**
+     * @see PaymentActivity#showProgressBar()
+     */
+    void showProgressBar() {
+        startActionSafely(PaymentActivity::showProgressBar);
     }
 
-    protected void hideProgressBar() {
-        startActionSafely(new Action() {
-            @Override
-            public void start(PaymentActivity activity) {
-                activity.hideProgressBar();
-            }
-        });
+    /**
+     * @see PaymentActivity#hideProgressBar()
+     */
+    void hideProgressBar() {
+        startActionSafely(PaymentActivity::hideProgressBar);
     }
 
-    protected void startActionSafely(Action action) {
+    /**
+     * Starts an action if payment activity is attached.
+     *
+     * @param action action to start
+     */
+    void startActionSafely(@NonNull Action action) {
         PaymentActivity activity = getPaymentActivity();
         if (activity != null) {
             action.start(activity);
         }
     }
 
-    public interface Action {
-        void start(PaymentActivity activity);
+    /**
+     * Implementations do some action using attached activity.
+     */
+    interface Action {
+        /**
+         * Starts some action.
+         *
+         * @param activity payment activity
+         */
+        void start(@NonNull PaymentActivity activity);
     }
 }
