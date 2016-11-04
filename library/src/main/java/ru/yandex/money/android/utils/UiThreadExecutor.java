@@ -29,8 +29,9 @@ import android.os.Handler;
 import java.util.concurrent.Executor;
 
 /**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
+ * @deprecated this class will be removed in future major release
  */
+@Deprecated
 public class UiThreadExecutor implements Executor {
 
     private static UiThreadExecutor instance;

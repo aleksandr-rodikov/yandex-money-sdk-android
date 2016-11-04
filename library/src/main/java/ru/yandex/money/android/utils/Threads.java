@@ -24,12 +24,26 @@
 
 package ru.yandex.money.android.utils;
 
-/**
- * @author vyasevich
- */
-public class Threads {
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 
-    public static void sleepSafely(long time) {
+/**
+ * Helper class to work with threads.
+ *
+ * @deprecated this class will be removed in future major release
+ */
+@Deprecated
+public final class Threads {
+
+    private Threads() {
+    }
+
+    /**
+     * Causes the thread which sent this message to sleep for the given interval of time (given in milliseconds).
+     *
+     * @param time sleep interval
+     */
+    public static void sleepSafely(@IntRange(from = 0) long time) {
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
@@ -37,7 +51,12 @@ public class Threads {
         }
     }
 
-    public static void runOnBackground(Runnable runnable) {
+    /**
+     * Run something on a new thread.
+     *
+     * @param runnable runnable
+     */
+    public static void runOnBackground(@NonNull Runnable runnable) {
         new Thread(runnable).start();
     }
 }

@@ -24,70 +24,118 @@
 
 package ru.yandex.money.android.utils;
 
+import android.os.Bundle;
 import android.os.Parcel;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
 /**
- * @author vyasevich
+ * Convenience methods to work with parcelables.
  */
-public class Parcelables {
+public final class Parcelables {
 
-    public static void writeBoolean(Parcel parcel, boolean value) {
+    private Parcelables() {
+    }
+
+    /**
+     * Writes boolean value to a parcel.
+     *
+     * @param parcel parcel
+     * @param value boolean value
+     */
+    public static void writeBoolean(@NonNull Parcel parcel, boolean value) {
         parcel.writeByte(Booleans.toByte(value));
     }
 
-    public static void writeNullableLong(Parcel parcel, Long value) {
+    /**
+     * Writes nullable long to a parcel.
+     *
+     * @param parcel parcel
+     * @param value long value
+     */
+    public static void writeNullableLong(@NonNull Parcel parcel, Long value) {
         boolean hasValue = writeNullableValue(parcel, value);
         if (hasValue) {
             parcel.writeLong(value);
         }
     }
 
-    public static void writeBigDecimal(Parcel parcel, BigDecimal value) {
+    /**
+     * Writes {@link BigDecimal} value to a parcel.
+     *
+     * @param parcel parcel
+     * @param value {@link BigDecimal} value
+     */
+    public static void writeBigDecimal(@NonNull Parcel parcel, BigDecimal value) {
         boolean hasValue = writeNullableValue(parcel, value);
         if (hasValue) {
             parcel.writeDouble(value.doubleValue());
         }
     }
 
-    public static void writeStringMap(Parcel parcel, Map<String, String> map) {
-        if (parcel == null) {
-            throw new NullPointerException("parcel is null");
-        }
-        if (map == null) {
-            throw new NullPointerException("map is null");
-        }
+    /**
+     * Writes string map to a parcel.
+     *
+     * @param parcel parcel
+     * @param map string map
+     */
+    public static void writeStringMap(@NonNull Parcel parcel, @NonNull Map<String, String> map) {
         parcel.writeBundle(Bundles.writeStringMapToBundle(map));
     }
 
-    public static boolean readBoolean(Parcel parcel) {
+    /**
+     * Reads boolean value from a parcel
+     *
+     * @param parcel parcel
+     * @return boolean value
+     */
+    public static boolean readBoolean(@NonNull Parcel parcel) {
         return Booleans.toBoolean(parcel.readByte());
     }
 
-    public static Long readNullableLong(Parcel parcel) {
+    /**
+     * Reads nullable long from a parcel.
+     *
+     * @param parcel parcel
+     * @return nullable long
+     */
+    @Nullable
+    public static Long readNullableLong(@NonNull Parcel parcel) {
         return hasNullableValue(parcel) ? parcel.readLong() : null;
     }
 
-    public static BigDecimal readBigDecimal(Parcel parcel) {
+    /**
+     * Reads {@link BigDecimal} from a parcel.
+     *
+     * @param parcel parcel
+     * @return {@link BigDecimal} value
+     */
+    @Nullable
+    public static BigDecimal readBigDecimal(@NonNull Parcel parcel) {
         return hasNullableValue(parcel) ? new BigDecimal(parcel.readDouble()) : null;
     }
 
-    public static Map<String, String> readStringMap(Parcel parcel) {
-        if (parcel == null) {
-            throw new NullPointerException("parcel is null");
-        }
-        return Bundles.readStringMapFromBundle(parcel.readBundle());
+    /**
+     * Reads string map from a parcel.
+     *
+     * @param parcel parcel
+     * @return string map
+     */
+    @NonNull
+    public static Map<String, String> readStringMap(@NonNull Parcel parcel) {
+        return Bundles.readStringMapFromBundle(parcel.readBundle(Bundle.class.getClassLoader()));
     }
 
-    private static boolean writeNullableValue(Parcel parcel, Object value) {
+    private static boolean writeNullableValue(@NonNull Parcel parcel, @Nullable Object value) {
         boolean hasValue = value != null;
         writeBoolean(parcel, hasValue);
         return hasValue;
     }
 
-    private static boolean hasNullableValue(Parcel parcel) {
+    private static boolean hasNullableValue(@NonNull Parcel parcel) {
         return readBoolean(parcel);
     }
 }

@@ -24,12 +24,16 @@
 
 package ru.yandex.money.android.utils;
 
+import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.yandex.money.api.model.Card;
 
 import ru.yandex.money.android.R;
 
 /**
- * @author vyasevich
+ * Extends {@link Card.Type}.
  */
 public enum CardType {
 
@@ -39,15 +43,30 @@ public enum CardType {
     JCB(R.drawable.ym_default_card, R.drawable.ym_default_card),
     UNKNOWN(R.drawable.ym_default_card, R.drawable.ym_default_card);
 
+    /**
+     * icon for cards
+     */
+    @DrawableRes
     public final int icoResId;
+    /**
+     * icon for lists
+     */
+    @DrawableRes
     public final int cardResId;
 
-    CardType(int icoResId, int cardResId) {
+    CardType(@DrawableRes int icoResId, @DrawableRes int cardResId) {
         this.icoResId = icoResId;
         this.cardResId = cardResId;
     }
 
-    public static CardType get(Card.Type type) {
+    /**
+     * Gets {@link CardType} instance from {@link Card.Type}
+     *
+     * @param type type
+     * @return card type
+     */
+    @NonNull
+    public static CardType get(@Nullable Card.Type type) {
         if (type == null) {
             return UNKNOWN;
         }
