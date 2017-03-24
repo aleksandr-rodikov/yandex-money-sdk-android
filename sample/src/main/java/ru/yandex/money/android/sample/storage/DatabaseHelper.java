@@ -33,9 +33,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author vyasevich
- */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String NAME = "sample.db";
@@ -96,7 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private List<String> getValues(String table, String column) {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         Cursor cursor = getReadableDatabase().query(table, new String[]{column}, null, null, null,
                 null, column);
         while (cursor.moveToNext()) {

@@ -87,7 +87,7 @@ import rx.schedulers.Schedulers;
  * {@link #EXTRA_INVOICE_ID} will be present in returned {@code data} object. If payment was canceled by a user or
  * rejected by payment system, then result code {@link #RESULT_CANCELED} will be returned.</p>
  */
-public final class PaymentActivity extends Activity {
+public final class PaymentActivity extends Activity implements ExternalPaymentProcess.ParameterProvider {
 
     /**
      * An instance of {@link String} representing instance id.
@@ -104,7 +104,6 @@ public final class PaymentActivity extends Activity {
     private static final String PRODUCTION_HOST = "https://money.yandex.ru";
 
     private ExternalPaymentProcess process;
-    private ExternalPaymentProcess.ParameterProvider parameterProvider;
 
     private PaymentParams arguments;
 
@@ -211,6 +210,43 @@ public final class PaymentActivity extends Activity {
                     .commit();
             reset();
         }
+    }
+
+    @Override
+    public String getPatternId() {
+        return arguments.patternId;
+    }
+
+    @Override
+    public Map<String, String> getPaymentParameters() {
+        return arguments.paymentParams;
+    }
+
+    @Override
+    public MoneySource getMoneySource() {
+        return selectedCard;
+    }
+
+    @Override
+    public String getCsc() {
+        Fragment fragment = getCurrentFragment();
+        return fragment instanceof CscFragment ? ((CscFragment) fragment).getCsc() : null;
+    }
+
+    @Override
+    public String getExtAuthSuccessUri() {
+        return Constants.EXT_AUTH_SUCCESS_URI;
+    }
+
+    @Override
+    public String getExtAuthFailUri() {
+        return Constants.EXT_AUTH_FAIL_URI;
+    }
+
+    @Override
+    public boolean isRequestToken() {
+        Fragment fragment = getCurrentFragment();
+        return fragment instanceof SuccessFragment;
     }
 
     /**
@@ -386,46 +422,7 @@ public final class PaymentActivity extends Activity {
                 .setDebugMode(!PRODUCTION_HOST.equals(host))
                 .create();
 
-        parameterProvider = new ExternalPaymentProcess.ParameterProvider() {
-            @Override
-            public String getPatternId() {
-                return arguments.patternId;
-            }
-
-            @Override
-            public Map<String, String> getPaymentParameters() {
-                return arguments.paymentParams;
-            }
-
-            @Override
-            public MoneySource getMoneySource() {
-                return selectedCard;
-            }
-
-            @Override
-            public String getCsc() {
-                Fragment fragment = getCurrentFragment();
-                return fragment instanceof CscFragment ? ((CscFragment) fragment).getCsc() : null;
-            }
-
-            @Override
-            public String getExtAuthSuccessUri() {
-                return Constants.EXT_AUTH_SUCCESS_URI;
-            }
-
-            @Override
-            public String getExtAuthFailUri() {
-                return Constants.EXT_AUTH_FAIL_URI;
-            }
-
-            @Override
-            public boolean isRequestToken() {
-                Fragment fragment = getCurrentFragment();
-                return fragment instanceof SuccessFragment;
-            }
-        };
-
-        process = new ExternalPaymentProcess(client, parameterProvider);
+        process = new ExternalPaymentProcess(client, this);
 
         final Prefs prefs = new Prefs(this);
         String instanceId = prefs.restoreInstanceId();
@@ -463,7 +460,7 @@ public final class PaymentActivity extends Activity {
             case SUCCESS:
                 Fragment fragment = getCurrentFragment();
                 if (!(fragment instanceof SuccessFragment)) {
-                    showSuccess((ExternalCard) parameterProvider.getMoneySource());
+                    showSuccess((ExternalCard) getMoneySource());
                 } else if (pep.externalCard != null) {
                     ((SuccessFragment) fragment).saveCard(pep.externalCard);
                 }

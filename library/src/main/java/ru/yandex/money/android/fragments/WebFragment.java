@@ -58,7 +58,8 @@ public final class WebFragment extends PaymentFragment {
     private static final String KEY_URL = "uri";
     private static final String KEY_POST_DATA = "postData";
 
-    private WebView webView;
+    WebView webView;
+
     private View errorView;
 
     /**
@@ -134,7 +135,7 @@ public final class WebFragment extends PaymentFragment {
         loadPage(url, Bundles.readStringMapFromBundle(postData));
     }
 
-    private void showError() {
+    void showError() {
         webView.setVisibility(View.GONE);
         errorView.setVisibility(View.VISIBLE);
     }
@@ -152,6 +153,10 @@ public final class WebFragment extends PaymentFragment {
     }
 
     private class Client extends WebViewClient {
+
+        Client() {
+        }
+
         @SuppressWarnings("deprecation") // to support operating systems with integrated API < 24
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -196,6 +201,10 @@ public final class WebFragment extends PaymentFragment {
     }
 
     private class Chrome extends WebChromeClient {
+
+        Chrome() {
+        }
+
         @Override
         public void onProgressChanged(WebView view, int newProgress) {
             Log.d("WebChromeClient", "progress = " + newProgress);

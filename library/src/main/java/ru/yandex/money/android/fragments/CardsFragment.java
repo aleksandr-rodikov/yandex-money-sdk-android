@@ -59,8 +59,10 @@ public final class CardsFragment extends PaymentFragment {
     private static final String KEY_TITLE = "title";
     private static final String KEY_CONTRACT_AMOUNT = "contractAmount";
 
+    @Nullable
+    PopupMenu menu;
+
     private int orientation;
-    private PopupMenu menu;
     private ViewGroup bankCards;
 
     /**
@@ -134,7 +136,7 @@ public final class CardsFragment extends PaymentFragment {
         menu.show();
     }
 
-    private void deleteCard(@Nullable ExternalCard card, int position) {
+    void deleteCard(@Nullable ExternalCard card, int position) {
         DatabaseStorage storage = getDatabaseStorage();
         if (storage == null) return;
 

@@ -30,5 +30,5 @@ import android.content.Intent;
  * @deprecated this class will be removed in future major release
  */
 public interface IntentHandler {
-    public void handle(Intent intent);
+    void handle(Intent intent);
 }

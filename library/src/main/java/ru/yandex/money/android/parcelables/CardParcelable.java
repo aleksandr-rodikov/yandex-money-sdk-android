@@ -43,7 +43,7 @@ public class CardParcelable extends MoneySourceParcelable {
                 .setType((Card.Type) parcel.readSerializable()));
     }
 
-    private CardParcelable(@NonNull Parcel parcel) {
+    CardParcelable(@NonNull Parcel parcel) {
         this(parcel, new Card.Builder());
     }
 

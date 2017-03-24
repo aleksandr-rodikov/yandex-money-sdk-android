@@ -38,7 +38,7 @@ public final class ExternalCardParcelable extends CardParcelable {
         super(value);
     }
 
-    private ExternalCardParcelable(@NonNull Parcel parcel) {
+    ExternalCardParcelable(@NonNull Parcel parcel) {
         super(parcel, new ExternalCard.Builder()
                 .setFundingSourceType(parcel.readString())
                 .setMoneySourceToken(parcel.readString()));

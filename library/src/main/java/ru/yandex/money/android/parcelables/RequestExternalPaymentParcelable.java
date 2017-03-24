@@ -38,7 +38,7 @@ public final class RequestExternalPaymentParcelable extends BaseRequestPaymentPa
         super(value);
     }
 
-    private RequestExternalPaymentParcelable(@NonNull Parcel parcel) {
+    RequestExternalPaymentParcelable(@NonNull Parcel parcel) {
         super(parcel, new RequestExternalPayment.Builder());
     }
 
