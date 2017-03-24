@@ -32,6 +32,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -57,6 +58,8 @@ import com.yandex.money.api.processes.ExternalPaymentProcess;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import ru.yandex.money.android.database.DatabaseStorage;
 import ru.yandex.money.android.fragments.CardsFragment;
@@ -67,11 +70,6 @@ import ru.yandex.money.android.fragments.WebFragment;
 import ru.yandex.money.android.parcelables.ExternalCardParcelable;
 import ru.yandex.money.android.parcelables.ExternalPaymentProcessSavedStateParcelable;
 import ru.yandex.money.android.utils.Keyboards;
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 /**
  * <p>Main activity for a payment process. It guides a user through all payment steps and returns information whether
@@ -103,6 +101,8 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
 
     private static final String PRODUCTION_HOST = "https://money.yandex.ru";
 
+    private final ExecutorService backgroundService = Executors.newSingleThreadExecutor();
+
     private ExternalPaymentProcess process;
 
     private PaymentParams arguments;
@@ -115,7 +115,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
     @Nullable
     private ExternalCard selectedCard;
     @Nullable
-    private Subscription subscription;
+    private AsyncTask<Void, Void, ?> task;
 
     /**
      * Returns intent builder used for launch this activity.
@@ -343,14 +343,14 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
      * Proceeds to the next step of a payment.
      */
     public void proceed() {
-        subscription = performPaymentOperation(process::proceed);
+        task = performPaymentOperation(process::proceed);
     }
 
     /**
      * Repeats current step of a payment.
      */
     public void repeat() {
-        subscription = performPaymentOperation(process::repeat);
+        task = performPaymentOperation(process::repeat);
     }
 
     /**
@@ -367,30 +367,44 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
      */
     public void cancel() {
         selectedCard = null;
-        if (subscription != null) {
-            subscription.unsubscribe();
-            subscription = null;
+        if (task != null && task.getStatus() == AsyncTask.Status.RUNNING) {
+            task.cancel(true);
+            task = null;
         }
     }
 
     @NonNull
-    private Subscription performPaymentOperation(@NonNull Callable<Boolean> operation) {
-        return performOperation(operation, aBoolean -> handleProcess());
+    private AsyncTask<Void, Void, OperationResult<Boolean>> performPaymentOperation(
+            @NonNull Callable<Boolean> operation) {
+        return perform(operation, aBoolean -> handleProcess());
     }
 
     @NonNull
-    private <T> Subscription performOperation(@NonNull Callable<T> operation, @NonNull Action1<T> onResponse) {
+    private <T> AsyncTask<Void, Void, OperationResult<T>> perform(
+            @NonNull Callable<T> operation, @NonNull Consumer<T> consumer) {
+
         showProgressBar();
-        return Observable.fromCallable(operation)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(o -> {
-                    onResponse.call(o);
+        return new AsyncTask<Void, Void, OperationResult<T>>() {
+            @Override
+            protected OperationResult<T> doInBackground(Void... params) {
+                try {
+                    return new OperationResult<>(operation.call());
+                } catch (Exception e) {
+                    return new OperationResult<>(e);
+                }
+            }
+
+            @Override
+            protected void onPostExecute(OperationResult<T> result) {
+                if (isCancelled()) return;
+                if (result.operation != null) {
+                    consumer.consume(result.operation);
                     hideProgressBar();
-                }, throwable -> {
+                } else {
                     onOperationFailed();
-                    hideProgressBar();
-                });
+                }
+            }
+        }.executeOnExecutor(backgroundService);
     }
 
     private void handleProcess() {
@@ -427,7 +441,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
         final Prefs prefs = new Prefs(this);
         String instanceId = prefs.restoreInstanceId();
         if (TextUtils.isEmpty(instanceId)) {
-            performOperation(() -> client.execute(new InstanceId.Request(clientId)), response -> {
+            perform(() -> client.execute(new InstanceId.Request(clientId)), response -> {
                 if (response.statusInfo.isSuccessful()) {
                     prefs.storeInstanceId(response.instanceId);
                     process.setInstanceId(response.instanceId);
@@ -473,7 +487,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
         }
     }
 
-    private void onOperationFailed() {
+    void onOperationFailed() {
         showUnknownError();
         hideProgressBar();
     }
@@ -631,6 +645,28 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
         @NonNull
         private Intent createIntent() {
             return new Intent(context, PaymentActivity.class);
+        }
+    }
+
+    private interface Consumer<T> {
+        void consume(T value);
+    }
+
+    private static final class OperationResult<T> {
+
+        @Nullable
+        final T operation;
+        @Nullable
+        final Exception exception;
+
+        OperationResult(@Nullable T operation) {
+            this.operation = operation;
+            this.exception = null;
+        }
+
+        OperationResult(@Nullable Exception exception) {
+            this.operation = null;
+            this.exception = exception;
         }
     }
 }
