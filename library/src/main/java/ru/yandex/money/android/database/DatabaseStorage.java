@@ -59,15 +59,6 @@ public final class DatabaseStorage {
     }
 
     /**
-     * @deprecated use {@link #selectExternalCards()} instead, this method will be removed in future major release
-     */
-    @Deprecated
-    @NonNull
-    public List<ExternalCard> selectMoneySources() {
-        return selectExternalCards();
-    }
-
-    /**
      * Selects all stored money sources.
      *
      * @return a list of {@link ExternalCard} objects
@@ -84,7 +75,7 @@ public final class DatabaseStorage {
 
         List<ExternalCard> moneySources = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
-            moneySources.add((ExternalCard) new ExternalCard.Builder()
+            moneySources.add(new ExternalCard.Builder()
                     .setFundingSourceType(cursor.getString(fundingSourceTypeIndex))
                     .setMoneySourceToken(cursor.getString(tokenIndex))
                     .setPanFragment(cursor.getString(panFragmentIndex))
@@ -95,15 +86,6 @@ public final class DatabaseStorage {
         cursor.close();
         database.close();
         return moneySources;
-    }
-
-    /**
-     * @deprecated use {@link #insertExternalCard(ExternalCard)} instead, this method will be removed in future major
-     * release
-     */
-    @Deprecated
-    public void insertMoneySource(@Nullable ExternalCard card) {
-        insertExternalCard(card);
     }
 
     /**
@@ -128,15 +110,6 @@ public final class DatabaseStorage {
             database.insertOrThrow(MoneySourceTable.NAME, null, values);
             database.close();
         }
-    }
-
-    /**
-     * @deprecated use {@link #deleteExternalCard(ExternalCard)} instead, this method will be removed in future major
-     * release
-     */
-    @Deprecated
-    public void deleteMoneySource(@Nullable ExternalCard moneySource) {
-        deleteExternalCard(moneySource);
     }
 
     /**

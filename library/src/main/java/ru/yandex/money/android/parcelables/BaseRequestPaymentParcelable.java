@@ -33,32 +33,23 @@ import com.yandex.money.api.model.Error;
 
 import ru.yandex.money.android.utils.Parcelables;
 
-/**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
- */
+@SuppressWarnings("WeakerAccess")
 public abstract class BaseRequestPaymentParcelable implements Parcelable {
 
-    @NonNull
-    @Deprecated
-    public final BaseRequestPayment baseRequestPayment;
     @NonNull
     public final BaseRequestPayment value;
 
     public BaseRequestPaymentParcelable(@NonNull BaseRequestPayment value) {
         this.value = value;
-        this.baseRequestPayment = value;
     }
 
-    protected BaseRequestPaymentParcelable(@NonNull Parcel parcel,
-                                           @NonNull BaseRequestPayment.Builder builder) {
-
+    protected BaseRequestPaymentParcelable(@NonNull Parcel parcel, @NonNull BaseRequestPayment.Builder builder) {
         value = builder.setStatus((BaseRequestPayment.Status) parcel.readSerializable())
                 .setError((Error) parcel.readSerializable())
                 .setRequestId(parcel.readString())
                 .setContractAmount(Parcelables.readBigDecimal(parcel))
                 .setTitle(parcel.readString())
                 .create();
-        baseRequestPayment = value;
     }
 
     @Override

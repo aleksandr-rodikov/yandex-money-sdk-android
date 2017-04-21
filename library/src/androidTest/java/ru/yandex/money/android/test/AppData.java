@@ -42,7 +42,7 @@ final class AppData {
     private AppData() {
     }
 
-    public static void clean(Context context) {
+    static void clean(Context context) {
         checkContext(context);
 
         Prefs prefs = new Prefs(context);
@@ -54,7 +54,7 @@ final class AppData {
         }
     }
 
-    public static void addSavedCard(Context context, String instanceId, LocalProperties.Card card) {
+    static void addSavedCard(Context context, String instanceId, LocalProperties.Card card) {
         checkContext(context);
         if (TextUtils.isEmpty(instanceId)) {
             throw new IllegalArgumentException("instanceId is null or empty");
@@ -67,7 +67,7 @@ final class AppData {
         prefs.storeInstanceId(instanceId);
 
         DatabaseStorage storage = new DatabaseStorage(context);
-        storage.insertExternalCard((ExternalCard) new ExternalCard.Builder()
+        storage.insertExternalCard(new ExternalCard.Builder()
                 .setFundingSourceType("payment-card")
                 .setMoneySourceToken(card.token)
                 .setPanFragment(card.number)

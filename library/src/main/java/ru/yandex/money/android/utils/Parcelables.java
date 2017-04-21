@@ -46,6 +46,7 @@ public final class Parcelables {
      * @param parcel parcel
      * @param value boolean value
      */
+    @SuppressWarnings("WeakerAccess")
     public static void writeBoolean(@NonNull Parcel parcel, boolean value) {
         parcel.writeByte(Booleans.toByte(value));
     }
@@ -72,7 +73,7 @@ public final class Parcelables {
     public static void writeBigDecimal(@NonNull Parcel parcel, BigDecimal value) {
         boolean hasValue = writeNullableValue(parcel, value);
         if (hasValue) {
-            parcel.writeDouble(value.doubleValue());
+            parcel.writeString(value.toPlainString());
         }
     }
 
@@ -92,6 +93,7 @@ public final class Parcelables {
      * @param parcel parcel
      * @return boolean value
      */
+    @SuppressWarnings("WeakerAccess")
     public static boolean readBoolean(@NonNull Parcel parcel) {
         return Booleans.toBoolean(parcel.readByte());
     }
@@ -115,7 +117,7 @@ public final class Parcelables {
      */
     @Nullable
     public static BigDecimal readBigDecimal(@NonNull Parcel parcel) {
-        return hasNullableValue(parcel) ? new BigDecimal(parcel.readDouble()) : null;
+        return hasNullableValue(parcel) ? new BigDecimal(parcel.readString()) : null;
     }
 
     /**

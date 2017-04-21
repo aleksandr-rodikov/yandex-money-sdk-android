@@ -49,7 +49,7 @@ import com.yandex.money.api.methods.params.PaymentParams;
 import com.yandex.money.api.methods.params.ShopParams;
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.model.ExternalCard;
-import com.yandex.money.api.model.MoneySource;
+import com.yandex.money.api.model.Identifiable;
 import com.yandex.money.api.net.clients.ApiClient;
 import com.yandex.money.api.net.clients.DefaultApiClient;
 import com.yandex.money.api.net.providers.DefaultApiV1HostsProvider;
@@ -160,7 +160,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
 
             ExternalCardParcelable externalCardParcelable = savedInstanceState.getParcelable(KEY_SELECTED_CARD);
             if (externalCardParcelable != null) {
-                selectedCard = (ExternalCard) externalCardParcelable.value;
+                selectedCard = externalCardParcelable.value;
             }
         }
     }
@@ -223,7 +223,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
     }
 
     @Override
-    public MoneySource getMoneySource() {
+    public Identifiable getMoneySource() {
         return selectedCard;
     }
 
@@ -442,12 +442,12 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
         String instanceId = prefs.restoreInstanceId();
         if (TextUtils.isEmpty(instanceId)) {
             perform(() -> client.execute(new InstanceId.Request(clientId)), response -> {
-                if (response.statusInfo.isSuccessful()) {
+                if (response.isSuccessful()) {
                     prefs.storeInstanceId(response.instanceId);
                     process.setInstanceId(response.instanceId);
                     proceed();
                 } else {
-                    showError(response.statusInfo.error, response.statusInfo.status.code);
+                    showError(response.error, response.status.toString());
                 }
             });
             return false;
@@ -465,7 +465,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
                 showCards();
             }
         } else {
-            showError(rep.error, rep.status.code);
+            showError(rep.error, rep.status.toString());
         }
     }
 
@@ -483,7 +483,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
                 showWeb(pep.acsUri, pep.acsParams);
                 break;
             default:
-                showError(pep.error, pep.status.code);
+                showError(pep.error, pep.status.toString());
         }
     }
 
@@ -536,6 +536,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
     /**
      * Implementations of this interface sets payment parameters.
      */
+    @SuppressWarnings("WeakerAccess")
     public interface PaymentParamsBuilder extends Builder {
 
         /**

@@ -28,7 +28,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 
-import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.BankCardInfo;
 import com.yandex.money.api.util.Strings;
 
 import ru.yandex.money.android.R;
@@ -49,8 +49,8 @@ public final class MoneySourceFormatter {
      * @return formatted string
      */
     @NonNull
-    public static String formatPanFragment(@NonNull Card card) {
-        return formatPanFragment(card.panFragment);
+    public static String formatPanFragment(@NonNull BankCardInfo card) {
+        return formatPanFragment(card.getCardNumber());
     }
 
     /**
@@ -59,6 +59,7 @@ public final class MoneySourceFormatter {
      * @param panFragment pan fragment
      * @return formatted string
      */
+    @SuppressWarnings("WeakerAccess")
     @NonNull
     public static String formatPanFragment(@NonNull String panFragment) {
         String[] fragments = panFragment.split("\\s");
