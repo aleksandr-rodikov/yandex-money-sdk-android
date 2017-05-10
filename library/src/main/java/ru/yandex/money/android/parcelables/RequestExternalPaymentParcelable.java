@@ -27,11 +27,9 @@ package ru.yandex.money.android.parcelables;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.methods.RequestExternalPayment;
+import com.yandex.money.api.methods.payment.RequestExternalPayment;
 
-/**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
- */
+@SuppressWarnings("WeakerAccess")
 public final class RequestExternalPaymentParcelable extends BaseRequestPaymentParcelable {
 
     public RequestExternalPaymentParcelable(@NonNull RequestExternalPayment value) {

@@ -40,9 +40,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yandex.money.api.methods.params.P2pTransferParams;
-import com.yandex.money.api.methods.params.PaymentParams;
-import com.yandex.money.api.methods.params.PhoneParams;
+import com.yandex.money.api.methods.payment.params.P2pTransferParams;
+import com.yandex.money.api.methods.payment.params.PaymentParams;
+import com.yandex.money.api.methods.payment.params.PhoneParams;
 
 import java.io.IOException;
 import java.io.InputStream;

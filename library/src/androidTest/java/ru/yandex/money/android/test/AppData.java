@@ -29,6 +29,7 @@ import android.text.TextUtils;
 
 import com.yandex.money.api.model.Card;
 import com.yandex.money.api.model.ExternalCard;
+import com.yandex.money.api.util.Enums;
 
 import ru.yandex.money.android.Prefs;
 import ru.yandex.money.android.database.DatabaseStorage;
@@ -71,7 +72,7 @@ final class AppData {
                 .setFundingSourceType("payment-card")
                 .setMoneySourceToken(card.token)
                 .setPanFragment(card.number)
-                .setType(Card.Type.parse(card.type))
+                .setType(Enums.parse(Card.Type.VISA, Card.Type.UNKNOWN, card.type))
                 .create());
     }
 

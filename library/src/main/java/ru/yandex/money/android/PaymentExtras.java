@@ -3,8 +3,8 @@ package ru.yandex.money.android;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.methods.params.PaymentParams;
-import com.yandex.money.api.methods.params.ShopParams;
+import com.yandex.money.api.methods.payment.params.PaymentParams;
+import com.yandex.money.api.methods.payment.params.ShopParams;
 
 import java.util.Map;
 

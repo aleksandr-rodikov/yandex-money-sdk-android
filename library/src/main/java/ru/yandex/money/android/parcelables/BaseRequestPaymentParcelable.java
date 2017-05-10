@@ -28,7 +28,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.methods.BaseRequestPayment;
+import com.yandex.money.api.methods.payment.BaseRequestPayment;
 import com.yandex.money.api.model.Error;
 
 import ru.yandex.money.android.utils.Parcelables;

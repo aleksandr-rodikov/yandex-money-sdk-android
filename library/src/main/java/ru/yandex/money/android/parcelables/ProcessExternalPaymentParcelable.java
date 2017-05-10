@@ -28,7 +28,7 @@ import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.yandex.money.api.methods.ProcessExternalPayment;
+import com.yandex.money.api.methods.payment.ProcessExternalPayment;
 import com.yandex.money.api.model.ExternalCard;
 
 /**

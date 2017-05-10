@@ -32,7 +32,7 @@ import android.view.View;
 
 import com.robotium.solo.Condition;
 import com.robotium.solo.Solo;
-import com.yandex.money.api.methods.params.PaymentParams;
+import com.yandex.money.api.methods.payment.params.PaymentParams;
 
 import java.util.concurrent.TimeUnit;
 

@@ -34,6 +34,7 @@ import android.util.Log;
 
 import com.yandex.money.api.model.Card;
 import com.yandex.money.api.model.ExternalCard;
+import com.yandex.money.api.util.Enums;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public final class DatabaseStorage {
                     .setFundingSourceType(cursor.getString(fundingSourceTypeIndex))
                     .setMoneySourceToken(cursor.getString(tokenIndex))
                     .setPanFragment(cursor.getString(panFragmentIndex))
-                    .setType(Card.Type.parse(cursor.getString(typeIndex)))
+                    .setType(Enums.parse(Card.Type.VISA, Card.Type.UNKNOWN, cursor.getString(typeIndex)))
                     .create());
         }
 
