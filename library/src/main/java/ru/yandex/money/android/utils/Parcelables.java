@@ -29,6 +29,7 @@ import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -56,7 +57,9 @@ public final class Parcelables {
      *
      * @param parcel parcel
      * @param value long value
+     * @deprecated use {@link Parcel#writeSerializable(Serializable)} instead
      */
+    @Deprecated
     public static void writeNullableLong(@NonNull Parcel parcel, Long value) {
         boolean hasValue = writeNullableValue(parcel, value);
         if (hasValue) {
@@ -69,7 +72,9 @@ public final class Parcelables {
      *
      * @param parcel parcel
      * @param value {@link BigDecimal} value
+     * @deprecated use {@link Parcel#writeSerializable(Serializable)} instead
      */
+    @Deprecated
     public static void writeBigDecimal(@NonNull Parcel parcel, BigDecimal value) {
         boolean hasValue = writeNullableValue(parcel, value);
         if (hasValue) {
@@ -103,7 +108,9 @@ public final class Parcelables {
      *
      * @param parcel parcel
      * @return nullable long
+     * @deprecated use {@link Parcel#readSerializable()} instead
      */
+    @Deprecated
     @Nullable
     public static Long readNullableLong(@NonNull Parcel parcel) {
         return hasNullableValue(parcel) ? parcel.readLong() : null;
@@ -114,7 +121,9 @@ public final class Parcelables {
      *
      * @param parcel parcel
      * @return {@link BigDecimal} value
+     * @deprecated use {@link Parcel#readSerializable()} instead
      */
+    @Deprecated
     @Nullable
     public static BigDecimal readBigDecimal(@NonNull Parcel parcel) {
         return hasNullableValue(parcel) ? new BigDecimal(parcel.readString()) : null;

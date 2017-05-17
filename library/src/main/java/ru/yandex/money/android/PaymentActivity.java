@@ -49,7 +49,7 @@ import com.yandex.money.api.methods.payment.params.PaymentParams;
 import com.yandex.money.api.methods.payment.params.ShopParams;
 import com.yandex.money.api.model.Error;
 import com.yandex.money.api.model.ExternalCard;
-import com.yandex.money.api.model.Identifiable;
+import com.yandex.money.api.model.MoneySource;
 import com.yandex.money.api.net.clients.ApiClient;
 import com.yandex.money.api.net.clients.DefaultApiClient;
 import com.yandex.money.api.net.providers.DefaultApiV1HostsProvider;
@@ -223,7 +223,7 @@ public final class PaymentActivity extends Activity implements ExternalPaymentPr
     }
 
     @Override
-    public Identifiable getMoneySource() {
+    public MoneySource getMoneySource() {
         return selectedCard;
     }
 
