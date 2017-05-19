@@ -32,7 +32,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 import com.yandex.money.api.model.ExternalCard;
 import com.yandex.money.api.util.Enums;
 
@@ -80,7 +80,7 @@ public final class DatabaseStorage {
                     .setFundingSourceType(cursor.getString(fundingSourceTypeIndex))
                     .setMoneySourceToken(cursor.getString(tokenIndex))
                     .setPanFragment(cursor.getString(panFragmentIndex))
-                    .setType(Enums.parse(Card.Type.VISA, Card.Type.UNKNOWN, cursor.getString(typeIndex)))
+                    .setType(Enums.parse(CardBrand.VISA, CardBrand.UNKNOWN, cursor.getString(typeIndex)))
                     .create());
         }
 

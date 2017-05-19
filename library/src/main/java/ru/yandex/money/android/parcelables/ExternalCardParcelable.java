@@ -28,7 +28,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 import com.yandex.money.api.model.ExternalCard;
 
 public final class ExternalCardParcelable implements Parcelable {
@@ -43,7 +43,7 @@ public final class ExternalCardParcelable implements Parcelable {
     @SuppressWarnings("WeakerAccess")
     ExternalCardParcelable(@NonNull Parcel parcel) {
         value = new ExternalCard.Builder()
-                .setType((Card.Type) parcel.readSerializable())
+                .setType((CardBrand) parcel.readSerializable())
                 .setPanFragment(parcel.readString())
                 .setFundingSourceType(parcel.readString())
                 .setMoneySourceToken(parcel.readString())

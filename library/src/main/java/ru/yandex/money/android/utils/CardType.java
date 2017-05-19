@@ -28,12 +28,12 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 
 import ru.yandex.money.android.R;
 
 /**
- * Extends {@link Card.Type}.
+ * Extends {@link CardBrand}.
  */
 public enum CardType {
 
@@ -60,13 +60,13 @@ public enum CardType {
     }
 
     /**
-     * Gets {@link CardType} instance from {@link Card.Type}
+     * Gets {@link CardType} instance from {@link CardBrand}
      *
      * @param type type
      * @return card type
      */
     @NonNull
-    public static CardType get(@Nullable Card.Type type) {
+    public static CardType get(@Nullable CardBrand type) {
         if (type == null) {
             return UNKNOWN;
         }

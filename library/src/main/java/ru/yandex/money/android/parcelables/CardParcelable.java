@@ -29,6 +29,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 
 @SuppressWarnings("WeakerAccess")
 public class CardParcelable implements Parcelable {
@@ -42,9 +43,8 @@ public class CardParcelable implements Parcelable {
 
     protected CardParcelable(@NonNull Parcel parcel, @NonNull Card.Builder builder) {
         value = builder.setId(parcel.readString())
-                .setCardholderName(parcel.readString())
                 .setPanFragment(parcel.readString())
-                .setType((Card.Type) parcel.readSerializable())
+                .setType((CardBrand) parcel.readSerializable())
                 .create();
     }
 
@@ -60,7 +60,6 @@ public class CardParcelable implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(value.id);
-        dest.writeString(value.cardholderName);
         dest.writeString(value.panFragment);
         dest.writeSerializable(value.type);
     }
