@@ -88,8 +88,11 @@ public final class Parcelables {
      * @param parcel parcel
      * @param map string map
      */
-    public static void writeStringMap(@NonNull Parcel parcel, @NonNull Map<String, String> map) {
-        parcel.writeBundle(Bundles.writeStringMapToBundle(map));
+    public static void writeStringMap(@NonNull Parcel parcel, Map<String, String> map) {
+        boolean hasValue = writeNullableValue(parcel, map);
+        if (hasValue) {
+            parcel.writeBundle(Bundles.writeStringMapToBundle(map));
+        }
     }
 
     /**
@@ -135,9 +138,11 @@ public final class Parcelables {
      * @param parcel parcel
      * @return string map
      */
-    @NonNull
+    @Nullable
     public static Map<String, String> readStringMap(@NonNull Parcel parcel) {
-        return Bundles.readStringMapFromBundle(parcel.readBundle(Bundle.class.getClassLoader()));
+        return hasNullableValue(parcel) ?
+                Bundles.readStringMapFromBundle(parcel.readBundle(Bundle.class.getClassLoader())) :
+                null;
     }
 
     private static boolean writeNullableValue(@NonNull Parcel parcel, @Nullable Object value) {
