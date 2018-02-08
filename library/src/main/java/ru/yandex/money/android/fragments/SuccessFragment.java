@@ -25,6 +25,8 @@
 package ru.yandex.money.android.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,12 +45,13 @@ import ru.yandex.money.android.utils.CardType;
 import ru.yandex.money.android.utils.Views;
 
 /**
- * @author vyasevich
+ * Show success of payment operation.
  */
-public class SuccessFragment extends PaymentFragment {
+public final class SuccessFragment extends PaymentFragment {
 
     private static final String KEY_CONTRACT_AMOUNT = "contractAmount";
 
+    @Nullable
     private ExternalCard moneySource;
 
     private View card;
@@ -56,11 +59,19 @@ public class SuccessFragment extends PaymentFragment {
     private View successMarker;
     private TextView description;
 
-    public static SuccessFragment newInstance(BigDecimal contractAmount, ExternalCard moneySource) {
+    /**
+     * Creates an instance of {@link SuccessFragment}.
+     *
+     * @param contractAmount contract amount
+     * @param card saved card
+     * @return instance of {@link SuccessFragment}
+     */
+    @NonNull
+    public static SuccessFragment newInstance(@NonNull BigDecimal contractAmount, @Nullable ExternalCard card) {
         Bundle args = new Bundle();
         args.putString(KEY_CONTRACT_AMOUNT, contractAmount.toPlainString());
-        if (moneySource != null) {
-            args.putParcelable(KEY_MONEY_SOURCE, new ExternalCardParcelable(moneySource));
+        if (card != null) {
+            args.putParcelable(KEY_MONEY_SOURCE, new ExternalCardParcelable(card));
         }
 
         SuccessFragment frg = new SuccessFragment();
@@ -78,12 +89,7 @@ public class SuccessFragment extends PaymentFragment {
         description = (TextView) view.findViewById(R.id.ym_description);
         successMarker = view.findViewById(R.id.ym_success_marker);
         saveCard = (Button) view.findViewById(R.id.ym_save_card);
-        saveCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onSaveCardClicked();
-            }
-        });
+        saveCard.setOnClickListener(v -> onSaveCardClicked());
 
         return view;
     }
@@ -91,8 +97,7 @@ public class SuccessFragment extends PaymentFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        moneySource = getMoneySourceFromBundle(savedInstanceState == null ? getArguments() :
-                savedInstanceState);
+        moneySource = getMoneySourceFromBundle(savedInstanceState == null ? getArguments() : savedInstanceState);
         if (moneySource != null) {
             onCardExists();
         }
@@ -106,13 +111,17 @@ public class SuccessFragment extends PaymentFragment {
         }
     }
 
-    public void saveCard(ExternalCard moneySource) {
-        if (moneySource == null) {
-            throw new NullPointerException("moneySource is null");
-        }
-        this.moneySource = moneySource;
-        new DatabaseStorage(getPaymentActivity())
-                .insertMoneySource(moneySource);
+    /**
+     * Saves card to database.
+     *
+     * @param card card to save
+     */
+    public void saveCard(@Nullable ExternalCard card) {
+        DatabaseStorage storage = getDatabaseStorage();
+        if (storage == null) return;
+
+        this.moneySource = card;
+        storage.insertExternalCard(card);
         onCardSaved();
     }
 
@@ -126,15 +135,19 @@ public class SuccessFragment extends PaymentFragment {
     }
 
     private void onCardSaved() {
-        Views.setImageResource(getView(), R.id.ym_payment_card_type,
-                CardType.get(moneySource.type).icoResId);
-        Views.setText(getView(), R.id.ym_pan_fragment,
-                MoneySourceFormatter.formatPanFragment(moneySource.panFragment));
+        if (moneySource != null) {
+            description.setText(getString(R.string.ym_success_card_saved_description, moneySource.type.cscAbbr));
+
+            View view = getView();
+            if (view != null) {
+                Views.setImageResource(view, R.id.ym_payment_card_type, CardType.get(moneySource.type).icoResId);
+                Views.setText(view, R.id.ym_pan_fragment, MoneySourceFormatter.formatPanFragment(moneySource));
+            }
+        }
+
         card.setBackgroundResource(R.drawable.ym_card_saved);
         saveCard.setVisibility(View.GONE);
         successMarker.setVisibility(View.VISIBLE);
-        description.setText(getString(R.string.ym_success_card_saved_description,
-                moneySource.type.cscAbbr));
     }
 
     private void onCardExists() {
@@ -142,10 +155,15 @@ public class SuccessFragment extends PaymentFragment {
         saveCard.setVisibility(View.GONE);
         successMarker.setVisibility(View.GONE);
         description.setVisibility(View.GONE);
-        Views.setVisibility(getView(), R.id.ym_success, View.VISIBLE);
+
+        View view = getView();
+        if (view != null) {
+            Views.setVisibility(view, R.id.ym_success, View.VISIBLE);
+        }
     }
 
-    private ExternalCard getMoneySourceFromBundle(Bundle bundle) {
+    @Nullable
+    private ExternalCard getMoneySourceFromBundle(@NonNull Bundle bundle) {
         ExternalCardParcelable parcelable = bundle.getParcelable(KEY_MONEY_SOURCE);
         return parcelable == null ? null : (ExternalCard) parcelable.value;
     }

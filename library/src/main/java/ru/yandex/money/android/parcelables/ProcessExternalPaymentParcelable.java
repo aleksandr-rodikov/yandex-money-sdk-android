@@ -28,12 +28,13 @@ import android.os.Parcel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.yandex.money.api.methods.ProcessExternalPayment;
+import com.yandex.money.api.methods.payment.ProcessExternalPayment;
 import com.yandex.money.api.model.ExternalCard;
 
 /**
  * @author Slava Yasevich (vyasevich@yamoney.ru)
  */
+@SuppressWarnings("WeakerAccess")
 public final class ProcessExternalPaymentParcelable extends BaseProcessPaymentParcelable {
 
     public ProcessExternalPaymentParcelable(@NonNull ProcessExternalPayment value) {
@@ -63,7 +64,7 @@ public final class ProcessExternalPaymentParcelable extends BaseProcessPaymentPa
     private static ExternalCard readMoneySource(@NonNull Parcel parcel) {
         ExternalCardParcelable parcelable = parcel.readParcelable(
                 ExternalCardParcelable.class.getClassLoader());
-        return parcelable == null ? null : (ExternalCard) parcelable.value;
+        return parcelable == null ? null : parcelable.value;
     }
 
     public static final Creator<ProcessExternalPaymentParcelable> CREATOR =

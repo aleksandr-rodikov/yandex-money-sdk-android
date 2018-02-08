@@ -25,14 +25,29 @@
 package ru.yandex.money.android.utils;
 
 /**
- * @author vyasevich
+ * Convenience class to work with booleans.
  */
-public class Booleans {
+public final class Booleans {
 
+    private Booleans() {
+    }
+
+    /**
+     * Converts boolean to byte.
+     *
+     * @param b boolean
+     * @return byte
+     */
     public static byte toByte(boolean b) {
         return (byte) (b ? 1 : 0);
     }
 
+    /**
+     * Converts byte to boolean.
+     *
+     * @param b byte
+     * @return boolean
+     */
     public static boolean toBoolean(byte b) {
         return b != 0;
     }

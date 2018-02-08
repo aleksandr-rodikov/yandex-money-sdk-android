@@ -24,13 +24,10 @@
 
 package ru.yandex.money.android.test.properties;
 
-import com.yandex.money.api.methods.params.PhoneParams;
+import com.yandex.money.api.methods.payment.params.PhoneParams;
 
 import java.math.BigDecimal;
 
-/**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
- */
 public final class LocalProperties extends BaseProperties {
 
     public LocalProperties() {
@@ -71,8 +68,7 @@ public final class LocalProperties extends BaseProperties {
         public final String csc;
         public final String token;
 
-        public Card(String type, String number, String month, String year, String csc,
-                    String token) {
+        Card(String type, String number, String month, String year, String csc, String token) {
             this.type = type;
             this.number = number;
             this.month = month;

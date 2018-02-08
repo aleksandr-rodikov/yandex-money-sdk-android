@@ -25,43 +25,53 @@
 package ru.yandex.money.android.parcelables;
 
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import com.yandex.money.api.model.CardBrand;
 import com.yandex.money.api.model.ExternalCard;
 
-/**
- * @author Slava Yaseich (vyasevich@yamoney.ru)
- */
-public final class ExternalCardParcelable extends CardParcelable {
+public final class ExternalCardParcelable implements Parcelable {
+
+    @NonNull
+    public final ExternalCard value;
 
     public ExternalCardParcelable(@NonNull ExternalCard value) {
-        super(value);
+        this.value = value;
     }
 
-    private ExternalCardParcelable(@NonNull Parcel parcel) {
-        super(parcel, new ExternalCard.Builder()
+    @SuppressWarnings("WeakerAccess")
+    ExternalCardParcelable(@NonNull Parcel parcel) {
+        value = new ExternalCard.Builder()
+                .setType((CardBrand) parcel.readSerializable())
+                .setPanFragment(parcel.readString())
                 .setFundingSourceType(parcel.readString())
-                .setMoneySourceToken(parcel.readString()));
+                .setMoneySourceToken(parcel.readString())
+                .create();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        ExternalCard externalCard = (ExternalCard) value;
-        dest.writeString(externalCard.fundingSourceType);
-        dest.writeString(externalCard.moneySourceToken);
-        super.writeToParcel(dest, flags);
+        dest.writeSerializable(value.type);
+        dest.writeString(value.panFragment);
+        dest.writeString(value.fundingSourceType);
+        dest.writeString(value.moneySourceToken);
     }
 
-    public static final Creator<ExternalCardParcelable> CREATOR =
-            new Creator<ExternalCardParcelable>() {
-                @Override
-                public ExternalCardParcelable createFromParcel(Parcel source) {
-                    return new ExternalCardParcelable(source);
-                }
+    public static final Creator<ExternalCardParcelable> CREATOR = new Creator<ExternalCardParcelable>() {
+        @Override
+        public ExternalCardParcelable createFromParcel(Parcel source) {
+            return new ExternalCardParcelable(source);
+        }
 
-                @Override
-                public ExternalCardParcelable[] newArray(int size) {
-                    return new ExternalCardParcelable[size];
-                }
-            };
+        @Override
+        public ExternalCardParcelable[] newArray(int size) {
+            return new ExternalCardParcelable[size];
+        }
+    };
 }

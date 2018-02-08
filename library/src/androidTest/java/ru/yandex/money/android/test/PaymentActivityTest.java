@@ -25,17 +25,18 @@
 package ru.yandex.money.android.test;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 
 import com.robotium.solo.Condition;
 import com.robotium.solo.Solo;
-import com.yandex.money.api.methods.params.PhoneParams;
-import com.yandex.money.api.utils.MillisecondsIn;
+import com.yandex.money.api.methods.payment.params.PaymentParams;
+
+import java.util.concurrent.TimeUnit;
 
 import ru.yandex.money.android.PaymentActivity;
-import ru.yandex.money.android.PaymentArguments;
 import ru.yandex.money.android.test.espresso.ViewGroupInteraction;
 import ru.yandex.money.android.test.properties.LocalProperties;
 import ru.yandex.money.android.test.properties.TestProperties;
@@ -44,7 +45,6 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
@@ -111,7 +111,9 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
             protected void execute() {
                 waitForFragment();
                 // check that there was no error
-                onView(withId(R.id.ym_error_title)).check(doesNotExist());
+                onView(withId(R.id.web_view)).check(matches(isDisplayed()));
+                onView(withId(R.id.ym_error_title))
+                        .check(matches(not(isDisplayed())));
 
                 payNewCard();
             }
@@ -289,7 +291,7 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
     }
 
     private int sleep(int seconds) {
-        return seconds * (int) MillisecondsIn.SECOND;
+        return (int) TimeUnit.SECONDS.toMillis(seconds);
     }
 
     private String getString(int resId, Object... params) {
@@ -317,10 +319,8 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
         protected abstract void execute();
 
         private void setUp() {
-            PaymentArguments arguments = createArguments();
-
             Intent intent = PaymentActivity.getBuilder(getInstrumentation().getContext())
-                    .setPaymentParams(arguments.getPatternId(), arguments.getParams())
+                    .setPaymentParams(createArguments())
                     .setClientId(clientId)
                     .setHost(localProperties.getHostUrl())
                     .build();
@@ -329,9 +329,9 @@ public final class PaymentActivityTest extends ActivityInstrumentationTestCase2<
             solo = new Solo(getInstrumentation(), getActivity());
         }
 
-        private PaymentArguments createArguments() {
-            PhoneParams params = localProperties.getPhoneParams();
-            return new PaymentArguments(params.getPatternId(), params.makeParams());
+        @NonNull
+        private PaymentParams createArguments() {
+            return localProperties.getPhoneParams();
         }
     }
 

@@ -28,36 +28,28 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.methods.BaseRequestPayment;
+import com.yandex.money.api.methods.payment.BaseRequestPayment;
 import com.yandex.money.api.model.Error;
 
-import ru.yandex.money.android.utils.Parcelables;
+import java.math.BigDecimal;
 
-/**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
- */
+@SuppressWarnings("WeakerAccess")
 public abstract class BaseRequestPaymentParcelable implements Parcelable {
 
-    @NonNull
-    @Deprecated
-    public final BaseRequestPayment baseRequestPayment;
     @NonNull
     public final BaseRequestPayment value;
 
     public BaseRequestPaymentParcelable(@NonNull BaseRequestPayment value) {
         this.value = value;
-        this.baseRequestPayment = value;
     }
 
-    protected BaseRequestPaymentParcelable(@NonNull Parcel parcel,
-                                           @NonNull BaseRequestPayment.Builder builder) {
-
+    protected BaseRequestPaymentParcelable(@NonNull Parcel parcel, @NonNull BaseRequestPayment.Builder builder) {
         value = builder.setStatus((BaseRequestPayment.Status) parcel.readSerializable())
                 .setError((Error) parcel.readSerializable())
                 .setRequestId(parcel.readString())
-                .setContractAmount(Parcelables.readBigDecimal(parcel))
+                .setContractAmount((BigDecimal) parcel.readSerializable())
+                .setTitle(parcel.readString())
                 .create();
-        baseRequestPayment = value;
     }
 
     @Override
@@ -70,6 +62,7 @@ public abstract class BaseRequestPaymentParcelable implements Parcelable {
         dest.writeSerializable(value.status);
         dest.writeSerializable(value.error);
         dest.writeString(value.requestId);
-        Parcelables.writeBigDecimal(dest, value.contractAmount);
+        dest.writeSerializable(value.contractAmount);
+        dest.writeString(value.title);
     }
 }

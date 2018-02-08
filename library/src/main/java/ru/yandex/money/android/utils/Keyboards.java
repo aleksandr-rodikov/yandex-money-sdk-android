@@ -26,35 +26,55 @@ package ru.yandex.money.android.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 /**
- * @author vyasevich
+ * Convenience methods to work with soft keyboards.
  */
-public class Keyboards {
+public final class Keyboards {
 
     private Keyboards() {
     }
 
-    public static void hideKeyboard(Activity activity) {
+    /**
+     * Hides soft keyboard.
+     *
+     * @param activity activity
+     */
+    public static void hideKeyboard(@Nullable Activity activity) {
         if (activity == null || activity.isFinishing()) {
             return;
         }
         View view = activity.getWindow().getCurrentFocus();
         if (view != null) {
-            getInputMethodManager(activity).hideSoftInputFromWindow(view.getWindowToken(), 0);
+            InputMethodManager manager = getInputMethodManager(activity);
+            if (manager != null) {
+                manager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 
-    public static void showKeyboard(Activity activity, View view) {
+    /**
+     * Shows soft keyboards for a view.
+     *
+     * @param activity activity
+     * @param view view
+     */
+    public static void showKeyboard(@Nullable Activity activity, @NonNull View view) {
         if (activity == null || activity.isFinishing()) {
             return;
         }
-        getInputMethodManager(activity).showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        InputMethodManager manager = getInputMethodManager(activity);
+        if (manager != null) {
+            manager.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        }
     }
 
-    private static InputMethodManager getInputMethodManager(Context context) {
+    @Nullable
+    private static InputMethodManager getInputMethodManager(@NonNull Context context) {
         return (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 }

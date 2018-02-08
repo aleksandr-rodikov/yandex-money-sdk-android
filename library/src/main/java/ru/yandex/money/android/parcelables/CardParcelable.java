@@ -25,34 +25,43 @@
 package ru.yandex.money.android.parcelables;
 
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 
-/**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
- */
-public class CardParcelable extends MoneySourceParcelable {
+@SuppressWarnings("WeakerAccess")
+public class CardParcelable implements Parcelable {
+
+    @NonNull
+    public final Card value;
 
     public CardParcelable(@NonNull Card value) {
-        super(value);
+        this.value = value;
     }
 
     protected CardParcelable(@NonNull Parcel parcel, @NonNull Card.Builder builder) {
-        super(parcel, builder.setPanFragment(parcel.readString())
-                .setType((Card.Type) parcel.readSerializable()));
+        value = builder.setId(parcel.readString())
+                .setPanFragment(parcel.readString())
+                .setType((CardBrand) parcel.readSerializable())
+                .create();
     }
 
-    private CardParcelable(@NonNull Parcel parcel) {
+    CardParcelable(@NonNull Parcel parcel) {
         this(parcel, new Card.Builder());
     }
 
     @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
     public void writeToParcel(Parcel dest, int flags) {
-        Card card = (Card) value;
-        dest.writeString(card.panFragment);
-        dest.writeSerializable(card.type);
-        super.writeToParcel(dest, flags);
+        dest.writeString(value.id);
+        dest.writeString(value.panFragment);
+        dest.writeSerializable(value.type);
     }
 
     public static final Creator<CardParcelable> CREATOR = new Creator<CardParcelable>() {

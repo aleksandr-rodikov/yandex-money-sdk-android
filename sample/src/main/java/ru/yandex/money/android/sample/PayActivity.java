@@ -40,9 +40,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.yandex.money.api.methods.params.P2pTransferParams;
-import com.yandex.money.api.methods.params.PaymentParams;
-import com.yandex.money.api.methods.params.PhoneParams;
+import com.yandex.money.api.methods.payment.params.P2pTransferParams;
+import com.yandex.money.api.methods.payment.params.PaymentParams;
+import com.yandex.money.api.methods.payment.params.PhoneParams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,9 +54,6 @@ import ru.yandex.money.android.PaymentActivity;
 import ru.yandex.money.android.sample.storage.DatabaseHelper;
 import ru.yandex.money.android.utils.Views;
 
-/**
- * @author vyasevich
- */
 public class PayActivity extends ListActivity {
 
     private static final int REQUEST_CODE = 101;
@@ -166,7 +163,7 @@ public class PayActivity extends ListActivity {
             getListView().setVisibility(View.GONE);
             previous.setVisibility(View.GONE);
         } else {
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                     android.R.layout.simple_list_item_1, values);
             setListAdapter(adapter);
             getListView().setVisibility(View.VISIBLE);
@@ -239,15 +236,15 @@ public class PayActivity extends ListActivity {
 
     private static class ApiData {
 
-        public final String clientId;
-        public final String host;
+        final String clientId;
+        final String host;
 
         private ApiData(String clientId, String host) {
             this.clientId = clientId;
             this.host = host;
         }
 
-        public static ApiData getFromProperties(Context context) {
+        static ApiData getFromProperties(Context context) {
             Properties prop = loadProperties(context);
             return new ApiData(prop.getProperty("client_id"), prop.getProperty("host"));
         }

@@ -28,8 +28,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import com.yandex.money.api.methods.ProcessExternalPayment;
-import com.yandex.money.api.methods.RequestExternalPayment;
+import com.yandex.money.api.methods.payment.ProcessExternalPayment;
+import com.yandex.money.api.methods.payment.RequestExternalPayment;
 import com.yandex.money.api.processes.ExternalPaymentProcess;
 
 /**
@@ -38,19 +38,15 @@ import com.yandex.money.api.processes.ExternalPaymentProcess;
 public final class ExternalPaymentProcessSavedStateParcelable implements Parcelable {
 
     @NonNull
-    @Deprecated
-    public final ExternalPaymentProcess.SavedState savedState;
-    @NonNull
     public final ExternalPaymentProcess.SavedState value;
 
     public ExternalPaymentProcessSavedStateParcelable(
             @NonNull ExternalPaymentProcess.SavedState value) {
-
         this.value = value;
-        this.savedState = value;
     }
 
-    private ExternalPaymentProcessSavedStateParcelable(@NonNull Parcel parcel) {
+    @SuppressWarnings("WeakerAccess")
+    ExternalPaymentProcessSavedStateParcelable(@NonNull Parcel parcel) {
         RequestExternalPaymentParcelable rep = parcel.readParcelable(
                 RequestExternalPaymentParcelable.class.getClassLoader());
         ProcessExternalPaymentParcelable pep = parcel.readParcelable(
@@ -59,7 +55,6 @@ public final class ExternalPaymentProcessSavedStateParcelable implements Parcela
                 rep == null ? null : (RequestExternalPayment) rep.value,
                 pep == null ? null : (ProcessExternalPayment) pep.value,
                 parcel.readInt());
-        this.savedState = value;
     }
 
     @Override

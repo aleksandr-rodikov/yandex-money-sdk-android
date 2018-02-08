@@ -27,8 +27,9 @@ package ru.yandex.money.android.test;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.yandex.money.api.model.Card;
+import com.yandex.money.api.model.CardBrand;
 import com.yandex.money.api.model.ExternalCard;
+import com.yandex.money.api.util.Enums;
 
 import ru.yandex.money.android.Prefs;
 import ru.yandex.money.android.database.DatabaseStorage;
@@ -42,19 +43,19 @@ final class AppData {
     private AppData() {
     }
 
-    public static void clean(Context context) {
+    static void clean(Context context) {
         checkContext(context);
 
         Prefs prefs = new Prefs(context);
         prefs.storeInstanceId("");
 
         DatabaseStorage storage = new DatabaseStorage(context);
-        for (ExternalCard card : storage.selectMoneySources()) {
-            storage.deleteMoneySource(card);
+        for (ExternalCard card : storage.selectExternalCards()) {
+            storage.deleteExternalCard(card);
         }
     }
 
-    public static void addSavedCard(Context context, String instanceId, LocalProperties.Card card) {
+    static void addSavedCard(Context context, String instanceId, LocalProperties.Card card) {
         checkContext(context);
         if (TextUtils.isEmpty(instanceId)) {
             throw new IllegalArgumentException("instanceId is null or empty");
@@ -67,11 +68,11 @@ final class AppData {
         prefs.storeInstanceId(instanceId);
 
         DatabaseStorage storage = new DatabaseStorage(context);
-        storage.insertMoneySource((ExternalCard) new ExternalCard.Builder()
+        storage.insertExternalCard(new ExternalCard.Builder()
                 .setFundingSourceType("payment-card")
                 .setMoneySourceToken(card.token)
                 .setPanFragment(card.number)
-                .setType(Card.Type.parse(card.type))
+                .setType(Enums.parse(CardBrand.VISA, CardBrand.UNKNOWN, card.type))
                 .create());
     }
 

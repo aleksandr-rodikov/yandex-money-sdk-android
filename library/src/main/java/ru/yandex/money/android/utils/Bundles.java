@@ -25,22 +25,27 @@
 package ru.yandex.money.android.utils;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Slava Yasevich (vyasevich@yamoney.ru)
+ * Helper class to work with {@link Bundle}s.
  */
 public final class Bundles {
 
     private Bundles() {
     }
 
-    public static Bundle writeStringMapToBundle(Map<String, String> map) {
-        if (map == null) {
-            throw new NullPointerException("map is null");
-        }
+    /**
+     * Creates a {@link Bundle} and writes string {@link Map} as key-value pairs.
+     *
+     * @param map string map
+     * @return bundle
+     */
+    @NonNull
+    public static Bundle writeStringMapToBundle(@NonNull Map<String, String> map) {
         Bundle bundle = new Bundle();
         for (String key : map.keySet()) {
             bundle.putString(key, map.get(key));
@@ -48,12 +53,15 @@ public final class Bundles {
         return bundle;
     }
 
-    public static Map<String, String> readStringMapFromBundle(Bundle bundle) {
-        if (bundle == null) {
-            throw new NullPointerException("bundle is null");
-        }
-
-        Map<String, String> map = new HashMap<String, String>();
+    /**
+     * Creates string {@link Map} from a {@link Bundle}.
+     *
+     * @param bundle bundle
+     * @return string map
+     */
+    @NonNull
+    public static Map<String, String> readStringMapFromBundle(@NonNull Bundle bundle) {
+        Map<String, String> map = new HashMap<>();
         for (String key : bundle.keySet()) {
             map.put(key, bundle.getString(key));
         }

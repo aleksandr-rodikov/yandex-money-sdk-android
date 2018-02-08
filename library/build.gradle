@@ -4,15 +4,15 @@ apply plugin: 'bintray-release'
 
 ext {
     // version* variables must not be longer than two digits
-    versionMajor = 3
+    versionMajor = 4
     versionMinor = 1
-    versionPatch = 4
+    versionPatch = 0
     versionAlpha = 0
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
     resourcePrefix 'ym_'
 
     compileOptions {
@@ -21,10 +21,11 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 23
+        minSdkVersion 15
+        targetSdkVersion 25
         versionCode getAppVersionCode()
         versionName getAppVersionName()
+        consumerProguardFiles 'proguard-cfg.txt'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -47,12 +48,10 @@ int getAppVersionCode() {
 }
 
 dependencies {
-    compile 'com.yandex.money.api:yandex-money-sdk-java:5.1.0'
-    compile 'com.android.support:support-v13:23.2.0'
-    compile 'io.reactivex:rxandroid:1.1.0'
-    compile 'io.reactivex:rxjava:1.1.1'
-    androidTestCompile 'com.android.support.test:runner:0.4.1'
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.1'
+    compile 'com.yandex.money.api:yandex-money-sdk-java:7.1.0'
+    compile 'com.android.support:support-annotations:25.3.1'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
     androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.5.4'
 }
 
